@@ -232,6 +232,36 @@ h2 {
   border-radius: 0.65rem;
 }
 
+.event-toggle {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.2rem 0.15rem;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.event-toggle input {
+  margin: 0.2rem 0 0;
+  accent-color: var(--green);
+}
+
+.event-toggle span {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.event-toggle strong {
+  font-size: 0.82rem;
+}
+
+.event-toggle small {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 400;
+}
+
 .route-preferences legend {
   padding: 0 0.35rem;
   color: var(--ink);

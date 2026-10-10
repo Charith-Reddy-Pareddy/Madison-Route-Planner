@@ -22,6 +22,7 @@ const startSelect = document.querySelector('#route-start');
 const endSelect = document.querySelector('#route-end');
 const submitButton = document.querySelector('#route-submit');
 const clearButton = document.querySelector('#route-clear');
+const eventToggle = document.querySelector('#camp-randall-event');
 const weightInputs = {
   distance: document.querySelector('#distance-weight'),
   time: document.querySelector('#time-weight'),
@@ -40,6 +41,15 @@ let points = new Map();
 let markerById = new Map();
 let roads = [];
 let routePlanner = null;
+
+// These directed connections are present in data/roads.csv and model the event-area
+// closures described by the City of Madison for the Camp Randall concert on July 19, 2026.
+const eventClosures = [
+  { from: 'camp_randall', to: 'regent_park', status: 'closed' },
+  { from: 'regent_park', to: 'camp_randall', status: 'closed' },
+  { from: 'camp_randall', to: 'monroe_edgewood', status: 'closed' },
+  { from: 'monroe_edgewood', to: 'camp_randall', status: 'closed' }
+];
 
 function element(name, attributes = {}) {
   const node = document.createElementNS(svgNamespace, name);
@@ -158,6 +168,7 @@ function drawNetwork(locations, roadRows) {
   }
 
   addLocationOptions([...locationsById.values()]);
+  eventToggle.disabled = false;
   status.textContent = `${points.size} locations · ${pairs.size} road connections`;
 }
 
@@ -229,6 +240,20 @@ clearButton.addEventListener('click', () => {
   clearRoute();
   result.removeAttribute('data-state');
   result.textContent = 'Choose a start and destination to plan a walk.';
+});
+
+eventToggle.addEventListener('change', () => {
+  if (!routePlanner) return;
+  routePlanner.setClosures(eventToggle.checked ? eventClosures : []);
+  if (startSelect.value && endSelect.value) {
+    showRoute(startSelect.value, endSelect.value);
+    return;
+  }
+  clearRoute();
+  result.removeAttribute('data-state');
+  result.textContent = eventToggle.checked
+    ? 'Camp Randall event routes are active. Choose a start and destination.'
+    : 'Choose a start and destination to plan a walk.';
 });
 
 routeForm.addEventListener('submit', event => {
