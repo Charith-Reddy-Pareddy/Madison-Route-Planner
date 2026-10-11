@@ -1,4 +1,5 @@
 import { parseCsv } from './csv.mjs';
+import { eventClosures } from './camp-randall-event.mjs';
 import { createRoutePlanner } from './route-planner.mjs';
 import { buildRouteStops } from './route-stops.mjs';
 import {
@@ -41,15 +42,6 @@ let points = new Map();
 let markerById = new Map();
 let roads = [];
 let routePlanner = null;
-
-// These directed connections are present in data/roads.csv and model the event-area
-// closures described by the City of Madison for the Camp Randall concert on July 19, 2026.
-const eventClosures = [
-  { from: 'camp_randall', to: 'regent_park', status: 'closed' },
-  { from: 'regent_park', to: 'camp_randall', status: 'closed' },
-  { from: 'camp_randall', to: 'monroe_edgewood', status: 'closed' },
-  { from: 'monroe_edgewood', to: 'camp_randall', status: 'closed' }
-];
 
 function element(name, attributes = {}) {
   const node = document.createElementNS(svgNamespace, name);
