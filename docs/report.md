@@ -41,3 +41,9 @@ The scale measurements show the repository's Dijkstra implementation routing ove
 Search time rises sharply at the largest sizes, reaching about 0.97 seconds per search at one million nodes in this run. This reflects both the larger graph and the longer searches: mean target-route length rises from 0.09 miles at 100 nodes to 24.25 miles at one million nodes. The measurements therefore do not isolate node count as the only cause of slower searches.
 
 The curated graph represents 57 selected places and their mapped connections; the larger graph is a regional OSM walking network. They answer different questions and their timings should not be compared as if they were the same graph growing in size. The scale run also measures one seed and five targets per size, on one machine and one OSM snapshot. OSM foot-access tags may be incomplete, and route distances sum straight-line lengths between consecutive mapped way nodes. Repeating the study with other seeds, snapshots, and hardware would help distinguish general scaling behavior from this particular run.
+
+## Sources
+
+- Curated Madison locations and route-distance methods: [`data/sources.md`](../data/sources.md), the [UW–Madison Campus Map](https://map.wisc.edu/), and [City of Madison Parks GIS](https://maps.cityofmadison.com/arcgis/rest/services/Public/OPEN_DATA/MapServer/24).
+- Regional OSM network: [Geofabrik's Wisconsin extract](https://download.geofabrik.de/north-america/us/wisconsin-261009.osm.pbf), with data from OpenStreetMap contributors under the Open Database License. The extract date and checksum are recorded in [`benchmarks/README.md`](../benchmarks/README.md).
+- Benchmark implementation and raw measurements: [`src/DijkstraGraph.java`](../src/DijkstraGraph.java), [`src/OsmScaleBenchmark.java`](../src/OsmScaleBenchmark.java), and [`benchmarks/osm-scale-results.csv`](../benchmarks/osm-scale-results.csv).
