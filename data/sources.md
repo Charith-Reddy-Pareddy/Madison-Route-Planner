@@ -1,8 +1,8 @@
 # Data sources
 
-`locations.csv` and `roads.csv` are what `RoadNetworkLoader` reads at
-startup to build the live app's 57-location Madison/UW-Madison network
-(see [RoadNetwork.java](../src/RoadNetwork.java)). This file documents
+`locations.csv` and `roads.csv` are loaded by `RoadDataLoader` to build
+the Madison/UW-Madison walking graph (see
+[RoadDataLoader.java](../src/RoadDataLoader.java)). This file documents
 where that data came from.
 
 ## locations.csv
@@ -32,9 +32,9 @@ has no independent OSM entry, and its real address (975 University
 Avenue) matches Grainger Hall's exactly. Merged into one entry,
 `grainger_hall`, named "Grainger Hall (Wisconsin School of Business)".
 
-A full re-verification pass (every location re-geocoded independently,
-every result cross-checked, `scripts/geocode.py` built specifically to
-make this repeatable) caught two real, meaningful errors, both fixed:
+A full re-verification pass checked each location against fresh
+geocoding results and cross-checked ambiguous points against available
+map sources. It caught two meaningful errors, both fixed:
 
 - **Education Building** was 515m off -- the stored point actually landed
   on Steenbock's, a restaurant in a different building on North Orchard
@@ -67,20 +67,18 @@ actual street grid, not a route anyone could walk or drive. That
 consistently understated real distance (a straight line is a lower bound
 on any real route) and couldn't distinguish walking from driving at all.
 
-Both columns now come from [`scripts/compute_route_distances.py`](../scripts/compute_route_distances.py):
-real Dijkstra shortest-path search over the real Madison street graph
-already fetched from OpenStreetMap for the research track
-([pipeline/data/parsed/{nodes,edges}.json](../pipeline/README.md)),
-filtered per mode --
+The checked-in distances represent shortest paths over real mapped roads,
+not straight-line measurements. The original full street graph and the
+distance-generation scripts are not included in this repository, so the
+CSV values are the reproducible input used by the app and tests.
 
-- **walk**: every real street/path/sidewalk edge except
-  motorway/motorway_link/trunk/trunk_link (no legal pedestrian access),
-  treated as undirected -- a one-way *street* doesn't stop a pedestrian
-  using its sidewalk against traffic.
-- **drive**: every real edge except footway/pedestrian/path/steps/
-  cycleway/track/corridor/platform/bus_stop, kept directed exactly as
-  parsed (`parse_osm.py` already resolves real `oneway` tags into which
-  directed edges exist at all, so this respects real one-way streets).
+For those distances, the mapped network was filtered by travel mode:
+
+- **walk**: street, path, and sidewalk edges except motorway, motorway
+  links, trunk, and trunk links; pedestrian travel was treated as
+  undirected.
+- **drive**: road edges excluding pedestrian-only ways; directed edges
+  preserve mapped one-way restrictions.
 
 Each of the 57 curated locations is snapped independently to its nearest
 real graph node in each filtered mode -- the nearest walkable point isn't
@@ -166,74 +164,36 @@ are): `nicholas_rec<->ogg_hall`, `ogg_hall<->sellery_hall`,
 
 Two real bugs surfaced by testing along the way, both fixed:
 
-1. A few snapped-point routes came out *shorter* than the straight line
-   between the two locations' own stored coordinates -- geometrically
-   impossible for a real route, and it broke A*'s admissible-heuristic
-   guarantee (`AlgorithmsCorrectnessTest` caught a real mismatch between
-   `AStarAlgorithm` and `DijkstraGraph`). Fixed by clamping every stored
-   distance up to the straight-line floor, both by hand for the existing
-   data and permanently in `scripts/compute_route_distances.py` itself
-   (see its docstring) so it can't come back.
-2. Several new edges were added by computing one direction and reusing
-   the same number for the reverse row -- correct for `walkMiles` (the
-   walk graph is genuinely undirected) but wrong for `driveMiles`, which
-   respects real one-way streets and isn't always symmetric (e.g.
-   `lucky_apts -> chazen_museum` is really 0.59mi to drive, not the 0.11mi
-   the reverse direction happened to be). Fixed by re-running
-   `scripts/compute_route_distances.py` (now safe to re-run on the file
-   as it already exists -- see its docstring) so every directed row gets
-   its own independently-computed number.
+1. Some snapped-point routes were shorter than the straight-line distance
+   between the stored coordinates, which is impossible for a real route.
+   The affected CSV distances were corrected to respect that lower bound.
+   The source graph and generation scripts are not included here, so the
+   correction cannot be regenerated from this repository alone.
+2. Some directed edges reused the reverse row’s distance even though
+   one-way restrictions can make drive distances different by direction.
+   Those CSV values were corrected by checking each direction separately.
+   The source graph and generation scripts are not included here.
 
-**Known gap**: a handful of directed rows have no drivable route found
-in the fetched OSM extract (`walkMiles` still real and present for all
-of them), mostly around the Witte/Sellery/Ogg dorm cluster and Union
-South -- real pedestrian-only campus paths where a car genuinely can't
-follow the same route, not missing data. `union_south` is not actually
-drive-isolated (its outbound directions mostly resolve fine --
-only the return trip didn't, plausibly a real one-way access loop near
-its entrance); `witte_hall<->ogg_hall` is the one genuine gap worth
-flagging, since it's Ogg Hall's *only* curated edge, which would leave it
-completely unreachable in drive mode -- despite a real bus physically
-covering that corridor (`busRoute=Route B`), which means the real street
-does exist and this is very likely a bounding-box edge effect (see
-`pipeline/README.md`'s note that ~0.74% of the fetched extract lands in
-small disconnected fragments) or a node-snapping artifact, not a real-
-world fact. Left blank rather than papered over with a guess; worth a
-follow-up re-fetch with a wider bounding box.
+**Known gap**: a handful of directed rows have no drivable route in the
+available source data (`walkMiles` is present for them), mostly around
+the Witte/Sellery/Ogg dorm cluster and Union South. `witte_hall<->ogg_hall`
+is the notable case because it is Ogg Hall’s only curated edge, while
+the recorded bus route indicates transit serves that corridor. The full
+source street graph is not included here, so the exact cause cannot be
+verified. The drive distance remains blank until it can be checked against
+mapped roads rather than guessed.
 
-This is a hand-curated subset of the real street network -- not every
-real street or intersection between two points is included, only enough
-to connect the named locations plausibly. The same research-track OSM
-graph this script draws from ([pipeline/](../pipeline/)) also exists on
-its own, at full scale, kept separate from what the deployed app serves --
-see the top-level README's "Research track" section.
+This is a hand-curated subset of the real street network, with only the
+connections needed to link the named places. The larger OSM graph used
+for scale measurements is documented separately in the
+[benchmark notes](../benchmarks/README.md).
 
-## Reproducing this data
+## Validation
 
-**Single lookup** -- geocode one query and print the result:
-
-```bash
-python3 scripts/geocode.py "Capitol Square, Madison, WI"
-```
-
-**Re-verify the whole network** -- build a `queries.csv` (`id,name,query`
-columns) and run:
-
-```bash
-python3 scripts/geocode.py --batch queries.csv --out locations.csv --existing data/locations.csv
-```
-
-For each row, this re-geocodes `query` fresh, and:
-- if there's no existing coordinate for that `id`, uses the fresh result;
-- if there is, and it's within `--tolerance-m` (default 30m) of the fresh
-  result, **keeps the existing coordinate** (it may already reflect manual
-  correction beyond what a single query can capture) and just attaches
-  real `query`/`source`/`retrieved_at` provenance;
-- if it's further than that, keeps the existing coordinate but flags the
-  row in the printed report -- a real discrepancy gets a human look
-  (exactly how the Education Building and Olbrich Gardens errors above
-  were caught), not a silent overwrite either direction.
-
-Respects Nominatim's usage policy (max ~1 request/second, a descriptive
-`User-Agent`) and caches results in `scripts/.geocode_cache/` (gitignored)
-so re-running doesn't re-hit the API for queries already answered.
+The Java loader validates the CSV structure and road endpoints.
+[RoadDataLoaderTest](../test/RoadDataLoaderTest.java) also loads the
+checked-in Madison CSV files and checks their current counts and
+representative road and location fields. Run `mvn test` from the
+repository root to run the Java checks. The project does not include the
+original geocoding or distance-generation scripts, so those source
+outputs cannot be regenerated from this repository alone.
