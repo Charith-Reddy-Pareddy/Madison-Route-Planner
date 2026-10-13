@@ -21,9 +21,6 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - uses: actions/configure-pages@v5
-        with:
-          enablement: true
-          token: ${{ secrets.PAGES_TOKEN }}
       - name: Build static site
         run: scripts/build-pages.sh _site
       - uses: actions/upload-pages-artifact@v5

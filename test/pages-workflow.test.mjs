@@ -10,7 +10,8 @@ const workflow = readFileSync(resolve(root, '.github/workflows/pages.yml'), 'utf
 test('Pages deployment builds the checked-in site on main and manual runs', () => {
   assert.match(workflow, /^on:\n  push:\n    branches: \[main\]\n  workflow_dispatch:\s*$/m);
   assert.match(workflow, /run: scripts\/build-pages\.sh _site/);
-  assert.match(workflow, /uses: actions\/configure-pages@v5\n        with:\n          enablement: true\n          token: \$\{\{ secrets\.PAGES_TOKEN \}\}/);
+  assert.match(workflow, /uses: actions\/configure-pages@v5/);
+  assert.doesNotMatch(workflow, /enablement: true|PAGES_TOKEN/);
   assert.match(workflow, /uses: actions\/upload-pages-artifact@v5/);
   assert.match(workflow, /path: _site/);
 });
