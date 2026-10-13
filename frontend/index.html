@@ -1,124 +1,17 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f4f7f5">
-    <title>Madison Route Planning</title>
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Madison Route Planning &mdash; Shortest Route Planner</title>
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%230f1420'/%3E%3Cpath fill='%235b8cff' d='M12 4c-3.31 0-6 2.69-6 6 0 4.5 6 10 6 10s6-5.5 6-10c0-3.31-2.69-6-6-6zm0 8.25A2.25 2.25 0 1 1 12 7.5a2.25 2.25 0 0 1 0 4.75z'/%3E%3C/svg%3E"
+    />
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to route planner</a>
-    <header class="site-header">
-      <a class="brand" href="./" aria-label="Madison Route Planning home">
-        <span class="brand-mark" aria-hidden="true"><span></span></span>
-        <span class="brand-name">Madison <strong>Route Planning</strong></span>
-      </a>
-      <span class="header-note">A campus walking guide</span>
-    </header>
-
-    <main id="main">
-      <section class="intro" aria-labelledby="page-title">
-        <p class="eyebrow">University of Wisconsin–Madison</p>
-        <h1 id="page-title">Find your way<br><span>around Madison.</span></h1>
-        <p class="intro-copy">Plan a walk between familiar places across campus and the city.</p>
-      </section>
-
-      <section class="workspace" aria-labelledby="workspace-title">
-        <div class="workspace-heading">
-          <div>
-            <p class="eyebrow">YOUR NEXT WALK</p>
-            <h2 id="workspace-title">Route planner</h2>
-          </div>
-          <span class="status-pill"><span aria-hidden="true"></span>Walking</span>
-        </div>
-        <div class="map-area">
-          <form id="route-form" class="route-controls">
-            <label>
-              <span>Start</span>
-              <select id="route-start" name="start" required disabled>
-                <option value="">Choose a starting place</option>
-              </select>
-            </label>
-            <label>
-              <span>Destination</span>
-              <select id="route-end" name="destination" required disabled>
-                <option value="">Choose a destination</option>
-              </select>
-            </label>
-            <div class="route-actions">
-              <button id="route-submit" type="submit" disabled>Find route</button>
-              <button id="route-clear" class="clear-route" type="button">Clear</button>
-            </div>
-            <fieldset class="route-preferences" aria-describedby="route-preferences-help">
-              <legend>Route preferences</legend>
-              <label for="distance-weight">
-                <span>Distance <output id="distance-weight-value" for="distance-weight">100%</output></span>
-                <input id="distance-weight" type="range" min="0" max="100" value="100">
-              </label>
-              <label for="time-weight">
-                <span>Estimated time <output id="time-weight-value" for="time-weight">0%</output></span>
-                <input id="time-weight" type="range" min="0" max="100" value="0">
-              </label>
-              <label for="accessibility-weight">
-                <span>Accessibility <output id="accessibility-weight-value" for="accessibility-weight">0%</output></span>
-                <input id="accessibility-weight" type="range" min="0" max="100" value="0">
-              </label>
-              <p id="route-preferences-help">
-                Preferences combine by their relative weights; if all are 0%, distance is used. Time assumes a 3 mph walk and adds 30 seconds for each road with stairs. Roads without a mapped accessible route are penalized, and excluded at 100% accessibility.
-              </p>
-            </fieldset>
-            <label class="event-toggle" for="camp-randall-event">
-              <input id="camp-randall-event" type="checkbox" disabled>
-              <span>
-                <strong>Camp Randall concert event</strong>
-                <small>
-                  Avoid mapped connections for the July 19, 2026 event.
-                  <a href="https://www.cityofmadison.com/news/2026-07-16/street-closures-and-parking-restrictions-for-ac-dc-at-camp-randall-stadium"
-                      target="_blank" rel="noreferrer">City closure notice</a>
-                </small>
-              </span>
-            </label>
-          </form>
-          <p id="route-result" class="route-result" role="status" aria-live="polite">
-            Choose a start and destination to plan a walk.
-          </p>
-          <p id="map-status" class="map-status" role="status" aria-live="polite">
-            Loading campus locations and roads…
-          </p>
-          <svg id="network-map" class="map-canvas" viewBox="0 0 1000 560"
-              role="img" aria-label="Map of Madison locations and walking connections">
-            <defs>
-              <marker id="one-way-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4"
-                  orient="auto" markerUnits="userSpaceOnUse">
-                <path d="M 0 0 L 8 4 L 0 8 z" class="arrowhead"></path>
-              </marker>
-              <marker id="route-arrow" markerWidth="8" markerHeight="8" refX="6" refY="4"
-                  orient="auto" markerUnits="userSpaceOnUse">
-                <path d="M 0 0 L 8 4 L 0 8 z" class="route-arrowhead"></path>
-              </marker>
-            </defs>
-            <g id="road-layer"></g>
-            <g id="route-layer"></g>
-            <g id="location-layer"></g>
-          </svg>
-          <div class="map-legend" aria-label="Map legend">
-            <span><i class="legend-road" aria-hidden="true"></i>Road connection</span>
-            <span><i class="legend-one-way" aria-hidden="true"></i>One-way walk</span>
-            <span><i class="legend-route" aria-hidden="true"></i>Shortest route</span>
-            <span><i class="legend-place" aria-hidden="true"></i>Location</span>
-            <span><i class="legend-start" aria-hidden="true"></i>Start</span>
-            <span><i class="legend-end" aria-hidden="true"></i>Destination</span>
-          </div>
-          <section id="route-directions" class="route-directions" aria-labelledby="route-directions-title" hidden>
-            <h3 id="route-directions-title">Stops along your walk</h3>
-            <ol id="route-stops" class="route-stops" aria-label="Stops in route order"></ol>
-          </section>
-        </div>
-      </section>
-
-      <p class="page-note">Built around campus locations and walking connections.</p>
-    </main>
-    <script type="module" src="app.mjs"></script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

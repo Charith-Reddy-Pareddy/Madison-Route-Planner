@@ -1,0 +1,620 @@
+import { useEffect, useMemo, useRef, useState } from 'react';
+
+const VIEW_WIDTH = 800;
+const VIEW_HEIGHT = 640;
+const PADDING = 46;
+
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 6;
+// Rough px-per-character at the label font size, for estimating how wide a
+// name's bounding box is without a real DOM measurement.
+const CHAR_WIDTH = 6.3;
+const LABEL_HEIGHT = 13;
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function rectsOverlap(a, b, pad) {
+  return !(a.x1 + pad < b.x0 || a.x0 - pad > b.x1 || a.y1 + pad < b.y0 || a.y0 - pad > b.y1);
+}
+
+/**
+ * Greedy label placement prioritizes route locations, then other locations.
+ * Each label tries several sides of its marker and is omitted if it cannot
+ * fit without colliding with a label already placed.
+ */
+function layoutLabels(nodes, positions, toScreen, pathSet, endpointSet, viewWidth, viewHeight) {
+  const priority = (node) => endpointSet.has(node.id) ? 2 : pathSet.has(node.id) ? 1 : 0;
+  const ordered = [...nodes].sort((a, b) => priority(b) - priority(a));
+  const placedRects = [];
+  const labels = [];
+
+  for (const node of ordered) {
+    const pos = positions.get(node.id);
+    if (!pos) continue;
+    const screen = toScreen(pos);
+    if (screen.x < -20 || screen.x > viewWidth + 20 || screen.y < -20 || screen.y > viewHeight + 20) continue;
+
+    const width = node.name.length * CHAR_WIDTH;
+    const candidates = [
+      { x: screen.x + 10, y: screen.y + 4, textAnchor: 'start' },
+      { x: screen.x - 10, y: screen.y + 4, textAnchor: 'end' },
+      { x: screen.x, y: screen.y - 10, textAnchor: 'middle' },
+      { x: screen.x, y: screen.y + 22, textAnchor: 'middle' },
+    ];
+
+    for (const candidate of candidates) {
+      if (candidate.y < 12 || candidate.y > viewHeight - 6) continue;
+      const rect = {
+        x0: candidate.textAnchor === 'end' ? candidate.x - width : candidate.textAnchor === 'middle' ? candidate.x - width / 2 : candidate.x,
+        x1: candidate.textAnchor === 'end' ? candidate.x : candidate.textAnchor === 'middle' ? candidate.x + width / 2 : candidate.x + width,
+        y0: candidate.y - LABEL_HEIGHT,
+        y1: candidate.y + 3,
+      };
+      if (rect.x0 < 4 || rect.x1 > viewWidth - 4) continue;
+      if (placedRects.some((placed) => rectsOverlap(rect, placed, 3))) continue;
+      placedRects.push(rect);
+      labels.push({ id: node.id, name: node.name, ...candidate });
+      break;
+    }
+  }
+  return labels;
+}
+
+// The node cluster alone spans a narrow latitude range, so reserve
+// on-canvas room at the north and south edges for the lake shapes.
+const NORTH_WATER_MARGIN = 0.022;
+const SOUTH_WATER_MARGIN = 0.033;
+
+function computeBounds(nodes) {
+  const lats = nodes.map((n) => n.lat);
+  const lons = nodes.map((n) => n.lon);
+  return {
+    latMin: Math.min(...lats) - SOUTH_WATER_MARGIN,
+    latMax: Math.max(...lats) + NORTH_WATER_MARGIN,
+    lonMin: Math.min(...lons),
+    lonMax: Math.max(...lons),
+  };
+}
+
+function project(lat, lon, bounds) {
+  const { latMin, latMax, lonMin, lonMax } = bounds;
+  const x = PADDING + ((lon - lonMin) / (lonMax - lonMin || 1)) * (VIEW_WIDTH - 2 * PADDING);
+  // Higher latitude is north; SVG y grows downward, so invert.
+  const y = PADDING + ((latMax - lat) / (latMax - latMin || 1)) * (VIEW_HEIGHT - 2 * PADDING);
+  return { x, y };
+}
+
+// A straight lat/lon projection squashes a dense real-world cluster (~20
+// campus buildings within a few blocks of each other) into a handful of
+// screen pixels -- no amount of label cleverness fixes circles that
+// literally overlap. This nudges any two nodes closer than MIN_SEPARATION
+// apart away from each other, a few passes at a time, while leaving nodes
+// that are already far apart untouched (like real force-directed graph
+// layouts do for decluttering, e.g. subway-map-style distortion).
+const MIN_SEPARATION = 30;
+const REPULSION_PASSES = 200;
+// Keep marker spacing local to the building's projected position. In dense
+// clusters, some circles stay close together rather than moving far away.
+const MAX_DRIFT = 10;
+
+function clampDrift(pos, home) {
+  const dx = pos.x - home.x;
+  const dy = pos.y - home.y;
+  const dist = Math.hypot(dx, dy);
+  if (dist <= MAX_DRIFT) return;
+  const scale = MAX_DRIFT / dist;
+  pos.x = home.x + dx * scale;
+  pos.y = home.y + dy * scale;
+}
+
+function declump(rawPositions) {
+  const ids = [...rawPositions.keys()];
+  const pos = new Map(ids.map((id) => [id, { ...rawPositions.get(id) }]));
+  for (let pass = 0; pass < REPULSION_PASSES; pass++) {
+    let moved = false;
+    for (let i = 0; i < ids.length; i++) {
+      for (let j = i + 1; j < ids.length; j++) {
+        const a = pos.get(ids[i]);
+        const b = pos.get(ids[j]);
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.hypot(dx, dy) || 0.01;
+        if (dist >= MIN_SEPARATION) continue;
+        moved = true;
+        const push = (MIN_SEPARATION - dist) / 2;
+        const ux = dx / dist;
+        const uy = dy / dist;
+        a.x -= ux * push;
+        a.y -= uy * push;
+        b.x += ux * push;
+        b.y += uy * push;
+      }
+    }
+    for (const id of ids) {
+      clampDrift(pos.get(id), rawPositions.get(id));
+    }
+    if (!moved) break;
+  }
+  return pos;
+}
+
+// Rough outlines (not survey-accurate, just recognizable) of the two lakes
+// that frame the isthmus Madison and this network sit on -- Mendota to the
+// north, Monona to the southeast. Sized to fit inside the north/south canvas
+// margin computeBounds() reserves (NORTH_WATER_MARGIN / SOUTH_WATER_MARGIN
+// above/below the actual node range) -- these are hand-picked to match that
+// margin for the current node set, not derived from it, so if the network's
+// lat/lon range changes meaningfully, recheck these still land on-canvas
+// (e.g. temporarily log project(lat, lon, bounds) for each point). A safe
+// distance from the *unshifted* projection isn't enough on its own, though
+// -- declump() can push a crowded node an arbitrary distance to resolve
+// overlaps, occasionally straight into what reads as water. pushOutOfWater()
+// below is the actual guarantee: it runs after declump and physically
+// relocates any node that still ends up inside either shape.
+const LAKE_MENDOTA = [
+  [43.091, -89.46], [43.097, -89.43], [43.103, -89.4], [43.105, -89.37],
+  [43.101, -89.345], [43.094, -89.35], [43.09, -89.38], [43.089, -89.42],
+];
+const LAKE_MONONA = [
+  [43.048, -89.395], [43.045, -89.36], [43.038, -89.33], [43.028, -89.318],
+  [43.02, -89.335], [43.019, -89.365], [43.026, -89.39], [43.037, -89.4],
+];
+
+// Ray-casting point-in-polygon test.
+function pointInPolygon(x, y, poly) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const { x: xi, y: yi } = poly[i];
+    const { x: xj, y: yj } = poly[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+// For any node that lands inside a lake polygon, step it toward land --
+// straight down (south) out of Mendota, straight up (north) out of Monona
+// -- plus a small buffer past that so it doesn't just graze the shoreline.
+// Pushing "away from the polygon's centroid" was the first thing tried
+// here, but for a wide, roughly horizontal lake that direction is close to
+// arbitrary depending on where in the shape the node landed: a node near
+// the shore (i.e. barely inside, right where a crowded cluster would push
+// it) could get shoved sideways or even deeper in, landing it far from its
+// neighbors instead of just back on land. A fixed cardinal direction per
+// lake is predictable and always the shortest way back to the cluster.
+function pushOutOfWater(positions, waterPolygons) {
+  const STEP = 12;
+  const CLEAR_BUFFER_STEPS = 3;
+  for (const pos of positions.values()) {
+    for (const { poly, dy } of waterPolygons) {
+      if (!pointInPolygon(pos.x, pos.y, poly)) continue;
+      let extraSteps = 0;
+      for (let i = 0; i < 80; i++) {
+        pos.y += dy * STEP;
+        if (!pointInPolygon(pos.x, pos.y, poly)) {
+          extraSteps += 1;
+          if (extraSteps >= CLEAR_BUFFER_STEPS) break;
+        }
+      }
+    }
+  }
+}
+
+// Two nodes can each individually sit outside a lake and still have the
+// straight *road line* between them cut across it, if they're on either
+// side of an indentation in the shoreline (the lake polygon isn't
+// perfectly convex) or just close enough to a corner. pushOutOfWater only
+// checks node centers, so it can't catch this -- this does the same
+// directional nudge, but on both endpoints of any road whose line actually
+// crosses the water, until it doesn't.
+function segmentsIntersect(p1, p2, p3, p4) {
+  const cross = (o, a, b) => (a.x - o.x) * (b.y - o.y) - (a.y - o.y) * (b.x - o.x);
+  const d1 = cross(p3, p4, p1);
+  const d2 = cross(p3, p4, p2);
+  const d3 = cross(p1, p2, p3);
+  const d4 = cross(p1, p2, p4);
+  return (d1 > 0) !== (d2 > 0) && (d3 > 0) !== (d4 > 0);
+}
+
+function segmentIntersectsPolygon(a, b, poly) {
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    if (segmentsIntersect(a, b, poly[j], poly[i])) return true;
+  }
+  return false;
+}
+
+function pushRoadsOutOfWater(positions, edges, waterPolygons) {
+  const STEP = 10;
+  for (let iter = 0; iter < 40; iter++) {
+    let moved = false;
+    for (const edge of edges) {
+      const a = positions.get(edge.from);
+      const b = positions.get(edge.to);
+      if (!a || !b) continue;
+      for (const { poly, dy } of waterPolygons) {
+        if (!segmentIntersectsPolygon(a, b, poly)) continue;
+        a.y += dy * STEP;
+        b.y += dy * STEP;
+        moved = true;
+      }
+    }
+    if (!moved) break;
+  }
+}
+
+// Shortest distance from (x,y) to a line segment, for pointToPolygonDistance below.
+function distanceToSegment(x, y, ax, ay, bx, by) {
+  const dx = bx - ax;
+  const dy = by - ay;
+  const lengthSq = dx * dx + dy * dy;
+  const t = lengthSq === 0 ? 0 : clamp(((x - ax) * dx + (y - ay) * dy) / lengthSq, 0, 1);
+  const closestX = ax + t * dx;
+  const closestY = ay + t * dy;
+  return Math.hypot(x - closestX, y - closestY);
+}
+
+function pointToPolygonDistance(x, y, poly) {
+  let min = Infinity;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    min = Math.min(min, distanceToSegment(x, y, poly[i].x, poly[i].y, poly[j].x, poly[j].y));
+  }
+  return min;
+}
+
+// pushOutOfWater only fixes a node that's literally inside a lake; it does
+// nothing for one that's merely uncomfortably close to the shore, which
+// declump()'s crowded-pocket drift can absolutely produce even under its
+// MAX_DRIFT cap -- if a node's many close neighbors happen to sit mostly
+// on the lake side, the drift budget gets spent moving toward the water
+// (see e.g. Witte Residence Hall, real position ~2.7km from Lake Monona,
+// landing within visual shore-hugging distance after decluttering).
+// The fix has to be selective, though: several real locations (Memorial
+// Union, the Lakeshore dorms) are genuinely, correctly close to Lake
+// Mendota's real shore, and pushing them inland would reintroduce the
+// exact bug in the opposite direction. So this only enforces clearance
+// for a node whose *raw, undisplaced* projected position was already
+// comfortably clear of the lake -- if declump moved it closer than that,
+// push it back out; if it was already lakeside in real life, leave it.
+const MIN_WATER_CLEARANCE = 40;
+
+function ensureWaterClearance(positions, rawPositions, waterPolygons) {
+  for (const [id, pos] of positions.entries()) {
+    const raw = rawPositions.get(id);
+    for (const { poly, dy } of waterPolygons) {
+      const rawClearance = pointToPolygonDistance(raw.x, raw.y, poly);
+      if (rawClearance < MIN_WATER_CLEARANCE) continue; // genuinely lakeside -- leave it
+      for (let i = 0; i < 20; i++) {
+        if (pointToPolygonDistance(pos.x, pos.y, poly) >= MIN_WATER_CLEARANCE) break;
+        pos.y += dy * 4; // dy is already "away from this lake, toward land" (see pushOutOfWater)
+      }
+    }
+  }
+}
+
+function screenTextProps(screen) {
+  return { x: screen.x, y: screen.y, textAnchor: 'middle' };
+}
+
+function polygonPath(points, project, bounds) {
+  return points.map(([lat, lon], i) => {
+    const { x, y } = project(lat, lon, bounds);
+    return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`;
+  }).join(' ') + ' Z';
+}
+
+/** Renders the road network as an SVG map, highlighting `path` (a list of node ids) if given. */
+export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
+  const svgRef = useRef(null);
+  const dragState = useRef(null);
+  // Active touches, by pointer id -> last known SVG-unit position. Two of
+  // these at once means a pinch, not a drag.
+  const activePointers = useRef(new Map());
+  const pinchState = useRef(null);
+  const [view, setView] = useState({ zoom: 1, pan: { x: 0, y: 0 } });
+
+  const bounds = useMemo(() => (nodes.length === 0 ? null : computeBounds(nodes)), [nodes]);
+
+  const positions = useMemo(() => {
+    if (nodes.length === 0) return new Map();
+    const raw = new Map(nodes.map((n) => [n.id, project(n.lat, n.lon, bounds)]));
+    const declumped = declump(raw);
+    // dy: +1 pushes a trapped node south (down, out of Mendota, toward the
+    // cluster below it); -1 pushes north (up, out of Monona, toward the
+    // cluster above it).
+    const waterPolygons = [
+      { pts: LAKE_MENDOTA, dy: 1 },
+      { pts: LAKE_MONONA, dy: -1 },
+    ].map(({ pts, dy }) => ({ poly: pts.map(([lat, lon]) => project(lat, lon, bounds)), dy }));
+    // pushRoadsOutOfWater moves both endpoints of any road that crosses the
+    // water, without checking whether that motion pushes either endpoint's
+    // own center back into a lake as a side effect -- so a single pass of
+    // "fix nodes, then fix roads" isn't actually a guarantee. Alternate all
+    // three (water, roads, shore clearance) until nothing moves.
+    for (let i = 0; i < 5; i++) {
+      pushOutOfWater(declumped, waterPolygons);
+      pushRoadsOutOfWater(declumped, edges, waterPolygons);
+      ensureWaterClearance(declumped, raw, waterPolygons);
+    }
+    return declumped;
+  }, [nodes, edges, bounds]);
+
+  // Zooms so the world point under (screenX, screenY) stays fixed on screen --
+  // otherwise every zoom step would recenter on the viewBox origin instead of
+  // wherever the cursor (or a zoom button, using the view's center) is.
+  function zoomAt(screenX, screenY, factor) {
+    setView((v) => {
+      const newZoom = clamp(v.zoom * factor, MIN_ZOOM, MAX_ZOOM);
+      const worldX = (screenX - v.pan.x) / v.zoom;
+      const worldY = (screenY - v.pan.y) / v.zoom;
+      return { zoom: newZoom, pan: { x: screenX - worldX * newZoom, y: screenY - worldY * newZoom } };
+    });
+  }
+
+  function resetView() {
+    setView({ zoom: 1, pan: { x: 0, y: 0 } });
+  }
+
+  // React's onWheel is passive by default (can't preventDefault there), so
+  // the page would scroll along with the map -- attach a real listener.
+  useEffect(() => {
+    const svg = svgRef.current;
+    if (!svg) return undefined;
+    const handleWheel = (e) => {
+      e.preventDefault();
+      const rect = svg.getBoundingClientRect();
+      const scale = VIEW_WIDTH / rect.width;
+      const x = (e.clientX - rect.left) * scale;
+      const y = (e.clientY - rect.top) * scale;
+      zoomAt(x, y, e.deltaY < 0 ? 1.2 : 1 / 1.2);
+    };
+    svg.addEventListener('wheel', handleWheel, { passive: false });
+    return () => svg.removeEventListener('wheel', handleWheel);
+  }, []);
+
+  function toScreen(pos) {
+    return { x: view.pan.x + pos.x * view.zoom, y: view.pan.y + pos.y * view.zoom };
+  }
+
+  // Client (browser) pixels -> SVG viewBox units, accounting for the SVG
+  // being scaled down to fit its container (width: 100% in CSS).
+  function toSvgUnits(clientX, clientY) {
+    const rect = svgRef.current.getBoundingClientRect();
+    const scale = VIEW_WIDTH / rect.width;
+    return { x: (clientX - rect.left) * scale, y: (clientY - rect.top) * scale };
+  }
+
+  function pinchMidpointAndDistance() {
+    const pts = [...activePointers.current.values()];
+    const [a, b] = pts;
+    return {
+      mid: { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 },
+      dist: Math.hypot(b.x - a.x, b.y - a.y) || 0.01,
+    };
+  }
+
+  function handlePointerDown(e) {
+    // Panning/pinching starts only from empty map background, so node
+    // clicks keep working normally.
+    if (e.target.closest('.map-node')) return;
+    svgRef.current?.setPointerCapture?.(e.pointerId);
+    activePointers.current.set(e.pointerId, toSvgUnits(e.clientX, e.clientY));
+
+    if (activePointers.current.size === 2) {
+      dragState.current = null;
+      pinchState.current = { lastDist: pinchMidpointAndDistance().dist };
+    } else if (activePointers.current.size === 1) {
+      dragState.current = { pointerId: e.pointerId, startX: e.clientX, startY: e.clientY, pan: view.pan };
+    }
+  }
+
+  function handlePointerMove(e) {
+    if (activePointers.current.has(e.pointerId)) {
+      activePointers.current.set(e.pointerId, toSvgUnits(e.clientX, e.clientY));
+    }
+
+    if (activePointers.current.size === 2 && pinchState.current) {
+      const { mid, dist } = pinchMidpointAndDistance();
+      zoomAt(mid.x, mid.y, dist / pinchState.current.lastDist);
+      pinchState.current.lastDist = dist;
+      return;
+    }
+
+    // Only the single finger that actually started this drag should move it
+    // -- a second, unrelated pointer (e.g. tapping a node) must not.
+    if (!dragState.current || dragState.current.pointerId !== e.pointerId) return;
+    const rect = svgRef.current.getBoundingClientRect();
+    const scale = VIEW_WIDTH / rect.width;
+    const dx = (e.clientX - dragState.current.startX) * scale;
+    const dy = (e.clientY - dragState.current.startY) * scale;
+    // Capture the base pan now, synchronously, rather than reading
+    // dragState.current again inside the updater below: React doesn't
+    // always invoke a functional setState updater immediately -- it can
+    // defer it, and a fast real drag fires pointermove/pointerup in quick
+    // succession. If pointerup (which sets dragState.current = null) runs
+    // before this updater is actually invoked, a live re-read of
+    // dragState.current.pan here would crash on a null ref -- capturing
+    // the value eagerly closes over a plain object instead, which stays
+    // valid no matter when React gets around to calling the updater.
+    const basePan = dragState.current.pan;
+    setView((v) => ({ ...v, pan: { x: basePan.x + dx, y: basePan.y + dy } }));
+  }
+
+  function handlePointerUp(e) {
+    activePointers.current.delete(e.pointerId);
+    pinchState.current = null;
+    // If one finger lifts out of a pinch, resume panning with whichever
+    // finger is still down, from its own last known (not the lifted
+    // finger's) position.
+    if (activePointers.current.size === 1) {
+      const [[remainingId, remainingPos]] = activePointers.current.entries();
+      const rect = svgRef.current.getBoundingClientRect();
+      const scale = rect.width / VIEW_WIDTH;
+      dragState.current = {
+        pointerId: remainingId,
+        startX: rect.left + remainingPos.x * scale,
+        startY: rect.top + remainingPos.y * scale,
+        pan: view.pan,
+      };
+    } else {
+      dragState.current = null;
+    }
+  }
+
+  const pathIds = path ?? [];
+  const pathSet = new Set(pathIds);
+  const pathEdgeSet = new Set();
+  for (let i = 0; i < pathIds.length - 1; i++) {
+    pathEdgeSet.add(`${pathIds[i]}->${pathIds[i + 1]}`);
+  }
+
+  // A road with no return leg in the opposite direction is one-way; draw it
+  // once with a direction arrow instead of twice (there's only one edge
+  // object for it anyway) or as an overlapping duplicate pair (two-way
+  // roads have both directions as separate edges covering the same line).
+  const edgeKeys = new Set(edges.map((e) => `${e.from}->${e.to}`));
+  const seenPairs = new Set();
+  const roadSegments = [];
+  for (const edge of edges) {
+    const pairKey = [edge.from, edge.to].sort().join('|');
+    if (seenPairs.has(pairKey)) continue;
+    seenPairs.add(pairKey);
+    const oneWay = !edgeKeys.has(`${edge.to}->${edge.from}`);
+    roadSegments.push({ ...edge, oneWay });
+  }
+
+  const endpointSet = new Set(pathIds.length ? [pathIds[0], pathIds[pathIds.length - 1]] : []);
+  const labels = layoutLabels(nodes, positions, toScreen, pathSet, endpointSet, VIEW_WIDTH, VIEW_HEIGHT);
+
+  return (
+    <div className="map-wrap">
+      <svg
+        ref={svgRef}
+        className="map"
+        viewBox={`0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}`}
+        role="img"
+        aria-label="Road network map"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerLeave={handlePointerUp}
+      >
+        <defs>
+          <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" className="map-arrow" />
+          </marker>
+          <marker id="arrow-on-path" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" className="map-arrow on-path" />
+          </marker>
+        </defs>
+        <g transform={`translate(${view.pan.x} ${view.pan.y}) scale(${view.zoom})`}>
+          {bounds && (
+            <g className="map-water">
+              <path d={polygonPath(LAKE_MENDOTA, project, bounds)} />
+              <path d={polygonPath(LAKE_MONONA, project, bounds)} />
+            </g>
+          )}
+          {roadSegments.map((edge) => {
+            const from = positions.get(edge.from);
+            const to = positions.get(edge.to);
+            if (!from || !to) return null;
+            const onPath =
+              pathEdgeSet.has(`${edge.from}->${edge.to}`) ||
+              (!edge.oneWay && pathEdgeSet.has(`${edge.to}->${edge.from}`));
+            // Drives the "draw the route" animation: a straight line's own length,
+            // used as its dash length so a full dash-offset hides it and animating
+            // the offset to 0 reveals it end-to-end (see .map-edge.on-path in CSS).
+            const length = Math.hypot(to.x - from.x, to.y - from.y);
+            // With 120+ roads packed into a dense campus core, many
+            // semi-transparent lines stacked on each other compound into a
+            // solid gray mass regardless of how faint any one of them is --
+            // a flat opacity can't fix that, only fewer visible lines at
+            // once can. So off-path roads start almost invisible at the
+            // default overview zoom and fade in as the user zooms into a
+            // region, where decluttering has already spread them apart.
+            const offPathOpacity = clamp(0.05 + (view.zoom - 1) * 0.09, 0.05, 0.4);
+            return (
+              <line
+                key={`${edge.from}->${edge.to}`}
+                x1={from.x}
+                y1={from.y}
+                x2={to.x}
+                y2={to.y}
+                className={onPath ? 'map-edge on-path' : 'map-edge'}
+                markerEnd={edge.oneWay ? `url(#${onPath ? 'arrow-on-path' : 'arrow'})` : undefined}
+                style={onPath ? { '--road-length': length } : { opacity: offPathOpacity }}
+              />
+            );
+          })}
+          {nodes.map((node) => {
+            const pos = positions.get(node.id);
+            if (!pos) return null;
+            const isOnPath = pathSet.has(node.id);
+            // Origin and destination are marked distinctly (start red, end green)
+            // rather than as one generic "endpoint" color, so the map reads like
+            // a trip -- not just a highlighted subgraph.
+            const isStart = pathIds.length > 0 && node.id === pathIds[0];
+            const isEnd = pathIds.length > 0 && node.id === pathIds[pathIds.length - 1];
+            const isEndpoint = isStart || isEnd;
+            const radius = isEndpoint ? 10 : isOnPath ? 9 : 6;
+            return (
+              <g
+                key={node.id}
+                className={`map-node${isOnPath ? ' on-path' : ''}${isEndpoint ? ' endpoint' : ''}${isStart ? ' start' : ''}${isEnd ? ' end' : ''}${onNodeClick ? ' clickable' : ''}`}
+                onClick={onNodeClick ? () => onNodeClick(node.id) : undefined}
+                role={onNodeClick ? 'button' : undefined}
+                tabIndex={onNodeClick ? 0 : undefined}
+                onKeyDown={
+                  onNodeClick
+                    ? (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          onNodeClick(node.id);
+                        }
+                      }
+                    : undefined
+                }
+              >
+                <circle cx={pos.x} cy={pos.y} r={radius} />
+                <title>{isStart ? `${node.name} — start` : isEnd ? `${node.name} — destination` : isOnPath ? `${node.name} — along route` : node.name}</title>
+              </g>
+            );
+          })}
+        </g>
+        {/* Keep labels at a constant screen size while positioning them from
+            the same pan/zoom transform as the map. */}
+        <g className="map-labels">
+          {bounds && (
+            <>
+              <text className="map-water-label" {...screenTextProps(toScreen(project(43.097, -89.4, bounds)))}>
+                Lake Mendota
+              </text>
+              <text className="map-water-label" {...screenTextProps(toScreen(project(43.038, -89.363, bounds)))}>
+                Lake Monona
+              </text>
+            </>
+          )}
+          {labels.map((label) => (
+            <text key={label.id} className="map-node-label" x={label.x} y={label.y} textAnchor={label.textAnchor}>
+              {label.name}
+            </text>
+          ))}
+        </g>
+      </svg>
+      <div className="map-controls">
+        <button type="button" onClick={() => zoomAt(VIEW_WIDTH / 2, VIEW_HEIGHT / 2, 1.4)} aria-label="Zoom in">
+          +
+        </button>
+        <button type="button" onClick={() => zoomAt(VIEW_WIDTH / 2, VIEW_HEIGHT / 2, 1 / 1.4)} aria-label="Zoom out">
+          &minus;
+        </button>
+        <button type="button" onClick={resetView} aria-label="Reset map view">
+          Reset
+        </button>
+      </div>
+      <p className="map-zoom-hint">
+        Scroll, pinch, or use the +/&minus; buttons to zoom, drag to pan. Crowded labels appear as space allows.
+      </p>
+    </div>
+  );
+}

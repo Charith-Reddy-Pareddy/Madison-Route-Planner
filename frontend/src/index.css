@@ -1,0 +1,447 @@
+:root {
+  color-scheme: light;
+  --bg: #f4f6fb;
+  --panel-bg: #ffffff;
+  --panel-bg-soft: rgba(255, 255, 255, 0.86);
+  --border: #e2e8f0;
+  --text: #1a2233;
+  --muted: #64748b;
+  --accent: #3b66d6;
+  --accent-strong: #2648b0;
+  --edge: #cbd5e1;
+  --success: #16a34a;
+  --error: #dc2626;
+  /* A separate color from --error: red on a start pin reads as "danger,"
+     which isn't the right signal for "this is where you begin." Amber
+     pairs cleanly with the blue route and green end without clashing. */
+  --start: #d97706;
+  --shadow: 0 12px 30px -16px rgba(15, 23, 42, 0.22);
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(1100px 520px at 12% -10%, rgba(59, 102, 214, 0.1), transparent 60%),
+    radial-gradient(900px 480px at 100% 0%, rgba(22, 163, 74, 0.07), transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+}
+
+#root { display: contents; }
+
+header {
+  padding: 2rem 2rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+header h1 {
+  margin: 0 0 0.3rem;
+  font-size: 1.75rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(120deg, var(--text) 40%, var(--accent-strong));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.subtitle { margin: 0; color: var(--muted); font-size: 0.92rem; }
+
+main {
+  padding: 1.5rem 2rem;
+  display: grid;
+  grid-template-columns: minmax(260px, 360px) 1fr;
+  gap: 1.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+@media (max-width: 760px) {
+  main { grid-template-columns: 1fr; padding: 1rem; }
+}
+
+.panel {
+  background: var(--panel-bg-soft);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.4rem 1.6rem;
+  box-shadow: var(--shadow);
+}
+
+.panel h2 {
+  margin-top: 0;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Radio/checkbox labels need the input next to its text, not stacked in a
+   column like the Start/End dropdown labels above -- overrides `form label`
+   for just these (higher specificity: one class + one element beats two
+   elements), so the row layout wins without touching the dropdown labels. */
+.mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+}
+
+.mode-toggle legend {
+  font-size: 0.85rem;
+  color: var(--muted);
+  padding: 0 0.3rem;
+}
+
+.mode-toggle label,
+.live-toggle {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+select, button {
+  font-size: 0.9rem;
+  border-radius: 8px;
+  padding: 0.6rem 0.75rem;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+}
+
+select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+
+select:hover { border-color: var(--muted); }
+
+select:focus-visible,
+button:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(59, 102, 214, 0.28);
+  border-color: var(--accent);
+}
+
+button {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 6px 16px -6px rgba(59, 102, 214, 0.45);
+}
+
+button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20px -8px rgba(59, 102, 214, 0.55); }
+
+button:active:not(:disabled) { transform: translateY(0); }
+
+button:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+
+.swap-button {
+  align-self: flex-start;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  font-weight: 500;
+  padding: 0.3rem 0.6rem;
+  font-size: 0.8rem;
+  box-shadow: none;
+}
+
+.swap-button:hover {
+  opacity: 1;
+  color: var(--text);
+  border-color: var(--muted);
+  background: rgba(15, 23, 42, 0.04);
+  transform: none;
+}
+
+.status {
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+  min-height: 1.2em;
+}
+
+.status.error { color: var(--error); }
+
+.route-endpoints {
+  margin-top: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  color: var(--muted);
+}
+
+.endpoint-tag {
+  font-size: 0.82rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+}
+
+.endpoint-tag.start { background: rgba(217, 119, 6, 0.12); color: var(--start); }
+.endpoint-tag.end { background: rgba(22, 163, 74, 0.1); color: var(--success); }
+
+.section-label {
+  margin: 1rem 0 0.4rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.steps .total {
+  list-style: none;
+  margin-left: -1.25rem;
+  font-weight: 600;
+  color: var(--accent-strong);
+  border-top: 1px solid var(--border);
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.bus-trips {
+  margin: 0;
+  padding-left: 1.25rem;
+  display: grid;
+  gap: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.no-bus {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.mode-tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.1rem 0.4rem;
+  border-radius: 5px;
+  vertical-align: middle;
+}
+
+.mode-tag.bus { background: rgba(59, 102, 214, 0.12); color: var(--accent-strong); }
+
+.transit-disclaimer {
+  margin: 0.9rem 0 0;
+  font-size: 0.72rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.transit-disclaimer a { color: var(--accent-strong); }
+
+.map-wrap {
+  position: relative;
+}
+
+svg.map {
+  width: 100%;
+  height: auto;
+  display: block;
+  background:
+    radial-gradient(500px 320px at 30% 20%, rgba(59, 102, 214, 0.06), transparent 60%),
+    var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: grab;
+  /* Own pan/zoom handling (wheel + pointer drag) replaces the browser's
+     default touch scroll/pinch on this element, so it doesn't fight us. */
+  touch-action: none;
+  user-select: none;
+}
+
+.map-water path {
+  fill: rgba(59, 102, 214, 0.16);
+  stroke: rgba(59, 102, 214, 0.3);
+  stroke-width: 1;
+}
+
+.map-water-label {
+  fill: rgba(37, 70, 160, 0.75);
+  font-size: 13px;
+  font-style: italic;
+  font-weight: 600;
+  pointer-events: none;
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.6);
+  stroke-width: 3px;
+}
+
+svg.map:active { cursor: grabbing; }
+
+.map-controls {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.map-controls button {
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  line-height: 1;
+  background: var(--panel-bg-soft);
+  backdrop-filter: blur(6px);
+  color: var(--text);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.map-controls button:hover:not(:disabled) { transform: none; background: var(--panel-bg); }
+
+.map-controls button:last-child { font-size: 0.65rem; font-weight: 700; }
+
+.map-zoom-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* With 120+ roads packed into a dense campus core, full-weight background
+   lines read as spaghetti and make real crossings hard to tell apart from
+   incidental ones. Thinner and more transparent lets the highlighted route
+   (full opacity, thicker, colored) stay the one thing the eye latches onto. */
+/* Off-path opacity is set inline per-line, scaled by zoom (see NetworkMap.jsx). */
+.map-edge { stroke: var(--edge); stroke-width: 1; transition: stroke 0.2s ease, stroke-width 0.2s ease, opacity 0.2s ease; }
+.map-edge.on-path {
+  stroke: var(--accent);
+  stroke-width: 4;
+  opacity: 1;
+  stroke-dasharray: var(--road-length);
+  stroke-dashoffset: var(--road-length);
+  animation: draw-route 0.5s ease-out forwards;
+}
+.map-arrow { fill: var(--edge); }
+.map-arrow.on-path { fill: var(--accent); }
+
+@keyframes draw-route {
+  to { stroke-dashoffset: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .map-edge.on-path { animation: none; stroke-dashoffset: 0; }
+}
+
+.map-node circle { fill: var(--panel-bg); stroke: var(--muted); stroke-width: 1.5; transition: fill 0.2s ease, stroke 0.2s ease, r 0.2s ease; }
+.map-node.on-path circle { fill: var(--accent); stroke: var(--accent-strong); }
+/* Start and end are colored distinctly (not a shared "endpoint" color) so
+   the map reads as a trip -- where you're going from, and to. */
+.map-node.start circle { fill: var(--start); stroke: var(--start); filter: drop-shadow(0 0 5px rgba(217, 119, 6, 0.5)); }
+.map-node.end circle { fill: var(--success); stroke: var(--success); filter: drop-shadow(0 0 5px rgba(22, 163, 74, 0.5)); }
+.map-node.clickable { cursor: pointer; }
+.map-node.clickable:hover circle,
+.map-node.clickable:focus-visible circle { stroke: var(--accent-strong); stroke-width: 2.5; }
+.map-node.clickable:focus-visible { outline: none; }
+
+.map-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.map-node-label {
+  fill: var(--muted);
+  font-size: 11px;
+  paint-order: stroke;
+  stroke: var(--bg);
+  stroke-width: 3px;
+  pointer-events: none;
+}
+
+.legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.legend-swatch.road { background: var(--edge); opacity: 0.32; }
+.legend-swatch.route { background: var(--accent); height: 4px; }
+.legend-swatch.route-point { background: var(--accent); width: 9px; height: 9px; border-radius: 50%; }
+.legend-swatch.start,
+.legend-swatch.end {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+.legend-swatch.start { background: var(--start); }
+.legend-swatch.end { background: var(--success); }
+
+.legend-arrow { color: var(--muted); font-weight: 600; }
+
+footer {
+  padding: 1.5rem 2rem 2.5rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+footer code {
+  background: var(--panel-bg);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}
