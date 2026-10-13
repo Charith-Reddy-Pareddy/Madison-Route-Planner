@@ -2,12 +2,53 @@ function formatMinutes(minutes) {
   return Math.max(0, Math.round(minutes));
 }
 
+function groupBusLegs(segments) {
+  const grouped = [];
+  for (const segment of segments) {
+    const previous = grouped.at(-1);
+    const sameMode = previous?.mode === segment.mode;
+    const sameRoute = segment.mode !== 'bus' || previous?.busRoute === segment.busRoute;
+    const canGroup = segment.mode === 'bus' || segment.mode === 'walk';
+    if (canGroup && sameMode && sameRoute && previous.to === segment.from) {
+      previous.to = segment.to;
+      previous.toName = segment.toName;
+      previous.miles += segment.miles;
+      previous.minutes += segment.minutes;
+      if (segment.arrivalTime) previous.arrivalTime = segment.arrivalTime;
+    } else {
+      grouped.push({ ...segment });
+    }
+  }
+
+  const directions = [];
+  let previousRoute = null;
+  for (const leg of grouped) {
+    if (leg.mode === 'bus' && previousRoute && leg.busRoute !== previousRoute) {
+      const transfer = {
+        mode: 'transfer',
+        at: leg.from,
+        fromRoute: previousRoute,
+        toRoute: leg.busRoute,
+      };
+      const last = directions[directions.length - 1];
+      const index = last?.mode === 'wait' ? directions.length - 1 : directions.length;
+      directions.splice(index, 0, transfer);
+    }
+    directions.push(leg);
+    if (leg.mode === 'bus') previousRoute = leg.busRoute;
+  }
+  return directions.map((leg) => (
+    leg.miles == null ? leg : { ...leg, miles: Math.round(leg.miles * 100) / 100 }
+  ));
+}
+
 export default function RouteResult({ statusType, statusMessage, route, nodesById }) {
   const pathNames = new Map((route?.path ?? []).map((node) => [node.id, node.name]));
   const nameOf = (id, fallback) => fallback ?? pathNames.get(id) ?? nodesById.get(id)?.name ?? id;
   const isDrive = route?.mode === 'drive';
   const isAccessible = route?.mode === 'accessible';
   const isBus = route?.mode === 'bus';
+  const directions = isBus ? groupBusLegs(route.segments) : route?.segments ?? [];
 
   return (
     <>
@@ -19,7 +60,9 @@ export default function RouteResult({ statusType, statusMessage, route, nodesByI
         <div className="route-endpoints">
           <span className="endpoint-tag start">{nameOf(route.path[0].id, route.path[0].name)}</span>
           <span aria-hidden="true">&rarr;</span>
-          <span className="endpoint-tag end">{nameOf(route.path[route.path.length - 1].id, route.path[route.path.length - 1].name)}</span>
+          <span className="endpoint-tag end">
+            {nameOf(route.path[route.path.length - 1].id, route.path[route.path.length - 1].name)}
+          </span>
         </div>
       )}
 
@@ -42,23 +85,39 @@ export default function RouteResult({ statusType, statusMessage, route, nodesByI
             </p>
           )}
           <ol className="steps">
-            {route.segments.map((segment, i) => {
+            {directions.map((segment, i) => {
               const from = nameOf(segment.from, segment.fromName);
               const to = nameOf(segment.to, segment.toName);
+              if (segment.mode === 'transfer') {
+                return (
+                  <li key={'transfer-' + i}>
+                    <strong>
+                      Transfer at {nameOf(segment.at)}: change from {segment.fromRoute} to {segment.toRoute}.
+                    </strong>
+                  </li>
+                );
+              }
               if (segment.mode === 'wait') {
-                return <li key={\`wait-\${i}\`}>Wait at {from} (~{formatMinutes(segment.minutes)} min)</li>;
+                return <li key={'wait-' + i}>Wait at {from} (~{formatMinutes(segment.minutes)} min)</li>;
               }
               if (segment.mode === 'bus') {
                 return (
-                  <li key={\`bus-\${i}\`}>
-                    Board <span className="mode-tag bus">{segment.busRoute}</span> at {from} and get off at {to}
-                    {segment.departureTime ? \` (\${segment.departureTime}–\${segment.arrivalTime})\` : ''}
+                  <li key={'bus-' + i}>
+                    Ride <span className="mode-tag bus">{segment.busRoute}</span> from {from} to {to}
+                    {segment.departureTime ? ' (' + segment.departureTime + '–' + segment.arrivalTime + ')' : ''}
+                  </li>
+                );
+              }
+              if (segment.mode === 'walk') {
+                return (
+                  <li key={'walk-' + i}>
+                    Walk {from} &rarr; {to} ({segment.miles} mi, ~{segment.minutes} min)
                   </li>
                 );
               }
               return (
-                <li key={\`walk-\${i}\`}>
-                  Walk {from} &rarr; {to} ({segment.miles} mi, ~{segment.minutes} min)
+                <li key={String(segment.from) + '-' + String(segment.to) + '-' + i}>
+                  {from} &rarr; {to} ({segment.miles} mi, {segment.minutes} min)
                 </li>
               );
             })}
@@ -84,7 +143,7 @@ export default function RouteResult({ statusType, statusMessage, route, nodesByI
               {route.segments.some((segment) => segment.busRoute) ? (
                 <ul className="bus-trips">
                   {route.segments.filter((segment) => segment.busRoute).map((segment, i) => (
-                    <li key={\`bus-suggestion-\${i}\`}>
+                    <li key={'bus-suggestion-' + i}>
                       <span className="mode-tag bus">{segment.busRoute}</span>{' '}
                       {nameOf(segment.from, segment.fromName)} &rarr; {nameOf(segment.to, segment.toName)}
                     </li>
