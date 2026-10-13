@@ -27,6 +27,10 @@ export default function RouteForm({
           Drive
         </label>
         <label>
+          <input type="radio" name="mode" value="bus" checked={mode === 'bus'} onChange={() => onModeChange('bus')} />
+          Bus
+        </label>
+        <label>
           <input
             type="radio"
             name="mode"

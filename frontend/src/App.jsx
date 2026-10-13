@@ -31,7 +31,7 @@ export default function App() {
       const result = await getRoute(start, end, travelMode, useLive);
       if (requestId !== latestRequestId.current) return;
       setRoute(result);
-      setStatus({ type: 'success', message: `Shortest route found: ${result.path.length} stop(s).` });
+      setStatus({ type: 'success', message: result.mode === 'bus' ? 'Scheduled bus route found.' : `Shortest route found: ${result.path.length} stop(s).` });
     } catch (err) {
       if (requestId !== latestRequestId.current) return;
       setStatus({ type: 'error', message: err.message });
@@ -106,7 +106,7 @@ export default function App() {
       <header>
         <h1>Madison Route Planning</h1>
         <p className="subtitle">
-          Find the shortest route across a Madison, Wisconsin road network, powered by Dijkstra's algorithm.
+          Plan walking, driving, and scheduled bus trips across Madison.
         </p>
       </header>
 
@@ -151,7 +151,7 @@ export default function App() {
           <NetworkMap
             nodes={graph.nodes}
             edges={graph.edges}
-            path={route?.path.map((p) => p.id) ?? null}
+            path={route?.mode === 'bus' ? null : route?.path.map((p) => p.id) ?? null}
             onNodeClick={networkLoaded ? handleNodeClick : undefined}
           />
           <ul className="legend">
@@ -167,8 +167,7 @@ export default function App() {
 
       <footer>
         <p>
-          Graph algorithm: Dijkstra's shortest path (see <code>src/DijkstraGraph.java</code>). Java backend served
-          over plain HTTP.
+          Walking and driving use the curated Madison road network. Bus directions use the current Metro Transit schedule.
         </p>
       </footer>
     </>

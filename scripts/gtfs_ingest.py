@@ -3,7 +3,7 @@
 
 Run from the repository root:
     python3 scripts/gtfs_ingest.py
-The normalized feed is written under target/, which is ignored by Git.
+The normalized feed is written under frontend/public/ for the browser app.
 """
 
 import argparse
@@ -201,8 +201,8 @@ def normalize(tables):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "--output", type=Path, default=Path("target/metro-gtfs.json"),
-        help="normalized output path (default: target/metro-gtfs.json)"
+        "--output", type=Path, default=Path("frontend/public/metro-gtfs.json"),
+        help="normalized output path (default: frontend/public/metro-gtfs.json)"
     )
     args = parser.parse_args()
 
