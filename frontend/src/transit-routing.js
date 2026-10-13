@@ -20,7 +20,9 @@ function localDate(now, timeZone) {
     second: '2-digit',
     hourCycle: 'h23',
   }).formatToParts(now);
-  return Object.fromEntries(parts.filter((part) => part.type !== 'literal').map(({ type, value }) => [type, value]));
+  const values = Object.fromEntries(parts.filter((part) => part.type !== 'literal').map(({ type, value }) => [type, value]));
+  values.weekday = values.weekday.toLowerCase();
+  return values;
 }
 
 function dateKey(year, month, day) {
