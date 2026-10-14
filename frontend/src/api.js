@@ -45,15 +45,15 @@ let transitFeedPromise;
 
 async function getTransitFeed() {
   if (!transitFeedPromise) {
-    transitFeedPromise = fetch(\`\${import.meta.env.BASE_URL}metro-gtfs.json\`)
+    transitFeedPromise = fetch(`${import.meta.env.BASE_URL}metro-gtfs.json`)
       .then((response) => {
-        if (!response.ok) throw new Error(\`HTTP \${response.status}\`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
       })
       .catch((error) => {
         transitFeedPromise = null;
         throw new Error(
-          \`Madison Metro schedule data is unavailable. Run python3 scripts/gtfs_ingest.py first. (\${error.message})\`
+          `Madison Metro schedule data is unavailable. Run python3 scripts/gtfs_ingest.py first. (${error.message})`
         );
       });
   }

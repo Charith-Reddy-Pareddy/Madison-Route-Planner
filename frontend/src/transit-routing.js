@@ -26,7 +26,7 @@ function localDate(now, timeZone) {
 }
 
 function dateKey(year, month, day) {
-  return \`\${year}\${month}\${day}\`;
+  return `${year}${month}${day}`;
 }
 
 function dayBefore({ year, month, day }) {
@@ -73,7 +73,7 @@ function formatClock(seconds) {
   const daySeconds = ((seconds % 86400) + 86400) % 86400;
   const hour = String(Math.floor(daySeconds / 3600)).padStart(2, '0');
   const minute = String(Math.floor((daySeconds % 3600) / 60)).padStart(2, '0');
-  return \`\${hour}:\${minute}\`;
+  return `${hour}:${minute}`;
 }
 
 class TimeHeap {
