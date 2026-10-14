@@ -537,7 +537,7 @@ export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
             // once can. So off-path roads start almost invisible at the
             // default overview zoom and fade in as the user zooms into a
             // region, where decluttering has already spread them apart.
-            const offPathOpacity = clamp(0.05 + (view.zoom - 1) * 0.09, 0.05, 0.4);
+            const offPathOpacity = clamp(0.12 - (view.zoom - 1) * 0.015, 0.05, 0.12);
             return (
               <line
                 key={`${edge.from}->${edge.to}`}
@@ -546,6 +546,7 @@ export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
                 x2={to.x}
                 y2={to.y}
                 className={onPath ? 'map-edge on-path' : 'map-edge'}
+                vectorEffect="non-scaling-stroke"
                 markerEnd={edge.oneWay ? `url(#${onPath ? 'arrow-on-path' : 'arrow'})` : undefined}
                 style={onPath ? { '--road-length': length } : { opacity: offPathOpacity }}
               />
@@ -585,7 +586,7 @@ export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
                     : undefined
                 }
               >
-                <circle cx={pos.x} cy={pos.y} r={radius} />
+                <circle cx={pos.x} cy={pos.y} r={radius / view.zoom} vectorEffect="non-scaling-stroke" />
                 <title>{isStart ? `${node.name} — start` : isEnd ? `${node.name} — destination` : isOnPath ? `${node.name} — along route` : node.name}</title>
               </g>
             );

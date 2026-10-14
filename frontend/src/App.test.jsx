@@ -28,10 +28,21 @@ describe('campus route map', () => {
     const { container } = render(<App />);
     await waitFor(() => expect(container.querySelector('.map')).not.toBeNull());
     const mapContent = container.querySelector('.map > g');
+    const marker = container.querySelector('.map-node:not(.on-path) circle');
+    const road = container.querySelector('.map-edge:not(.on-path)');
     const initial = mapContent.getAttribute('transform');
+    const initialZoom = Number(initial.match(/scale\(([^)]+)\)/)[1]);
+    const markerSize = Number(marker.getAttribute('r')) * initialZoom;
+    const roadOpacity = Number(road.style.opacity);
 
     fireEvent.click(screen.getByRole('button', { name: 'Zoom in' }));
 
-    expect(mapContent.getAttribute('transform')).not.toBe(initial);
+    const zoomed = mapContent.getAttribute('transform');
+    const zoom = Number(zoomed.match(/scale\(([^)]+)\)/)[1]);
+    expect(zoomed).not.toBe(initial);
+    expect(Number(marker.getAttribute('r')) * zoom).toBeCloseTo(markerSize);
+    expect(marker.getAttribute('vector-effect')).toBe('non-scaling-stroke');
+    expect(road.getAttribute('vector-effect')).toBe('non-scaling-stroke');
+    expect(Number(road.style.opacity)).toBeLessThan(roadOpacity);
   });
 });
