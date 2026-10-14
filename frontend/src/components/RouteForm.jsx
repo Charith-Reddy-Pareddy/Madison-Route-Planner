@@ -30,16 +30,6 @@ export default function RouteForm({
           <input type="radio" name="mode" value="bus" checked={mode === 'bus'} onChange={() => onModeChange('bus')} />
           Bus
         </label>
-        <label>
-          <input
-            type="radio"
-            name="mode"
-            value="accessible"
-            checked={mode === 'accessible'}
-            onChange={() => onModeChange('accessible')}
-          />
-          Accessible
-        </label>
       </fieldset>
       {mode === 'drive' && (
         <label className="live-toggle">
