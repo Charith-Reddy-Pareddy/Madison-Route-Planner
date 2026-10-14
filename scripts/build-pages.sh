@@ -18,6 +18,6 @@ if [ ! -x "$ROOT/frontend/node_modules/.bin/vite" ]; then
   exit 1
 fi
 
-npm --prefix "$ROOT/frontend" run build -- --outDir "$OUT" --emptyOutDir
+npm --prefix "$ROOT/frontend" run build -- --configLoader runner --outDir "$OUT" --emptyOutDir
 mkdir -p "$OUT/data"
 cp "$ROOT/data/locations.csv" "$ROOT/data/roads.csv" "$OUT/data/"
