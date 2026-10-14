@@ -530,14 +530,9 @@ export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
             // used as its dash length so a full dash-offset hides it and animating
             // the offset to 0 reveals it end-to-end (see .map-edge.on-path in CSS).
             const length = Math.hypot(to.x - from.x, to.y - from.y);
-            // With 120+ roads packed into a dense campus core, many
-            // semi-transparent lines stacked on each other compound into a
-            // solid gray mass regardless of how faint any one of them is --
-            // a flat opacity can't fix that, only fewer visible lines at
-            // once can. So off-path roads start almost invisible at the
-            // default overview zoom and fade in as the user zooms into a
-            // region, where decluttering has already spread them apart.
-            const offPathOpacity = clamp(0.12 - (view.zoom - 1) * 0.015, 0.05, 0.12);
+            // Keep roads faint in the full-network overview, then bring
+            // them forward as zooming narrows the visible area to fewer edges.
+            const offPathOpacity = clamp(0.12 + (view.zoom - 1) * 0.07, 0.12, 0.4);
             return (
               <line
                 key={`${edge.from}->${edge.to}`}
