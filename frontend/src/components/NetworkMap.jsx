@@ -20,12 +20,12 @@ function rectsOverlap(a, b, pad) {
 }
 
 /**
- * Greedy label placement prioritizes route locations, then other locations.
- * Each label tries several sides of its marker and is omitted if it cannot
- * fit without colliding with a label already placed.
+ * Greedy label placement prioritizes trip endpoints, the active marker, then
+ * other route locations. Each label tries several sides of its marker and is
+ * omitted if it cannot fit without colliding with a higher-priority label.
  */
-function layoutLabels(nodes, positions, toScreen, pathSet, endpointSet, viewWidth, viewHeight) {
-  const priority = (node) => endpointSet.has(node.id) ? 2 : pathSet.has(node.id) ? 1 : 0;
+function layoutLabels(nodes, positions, toScreen, pathSet, endpointSet, activeNodeId, viewWidth, viewHeight) {
+  const priority = (node) => endpointSet.has(node.id) ? 3 : node.id === activeNodeId ? 2 : pathSet.has(node.id) ? 1 : 0;
   const ordered = [...nodes].sort((a, b) => priority(b) - priority(a));
   const placedRects = [];
   const labels = [];
@@ -312,6 +312,7 @@ export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
   const activePointers = useRef(new Map());
   const pinchState = useRef(null);
   const [view, setView] = useState({ zoom: 1, pan: { x: 0, y: 0 } });
+  const [activeNodeId, setActiveNodeId] = useState(null);
 
   const bounds = useMemo(() => (nodes.length === 0 ? null : computeBounds(nodes)), [nodes]);
 
@@ -484,7 +485,11 @@ export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
   }
 
   const endpointSet = new Set(pathIds.length ? [pathIds[0], pathIds[pathIds.length - 1]] : []);
-  const labels = layoutLabels(nodes, positions, toScreen, pathSet, endpointSet, VIEW_WIDTH, VIEW_HEIGHT);
+  // Keep the overview readable: label the route, plus the one place the user
+  // is currently inspecting. Every other location remains available as a
+  // marker with its native title tooltip and can be focused from the map.
+  const labeledNodes = nodes.filter((node) => pathSet.has(node.id) || node.id === activeNodeId);
+  const labels = layoutLabels(labeledNodes, positions, toScreen, pathSet, endpointSet, activeNodeId, VIEW_WIDTH, VIEW_HEIGHT);
 
   return (
     <div className="map-wrap">
@@ -562,7 +567,12 @@ export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
                 key={node.id}
                 className={`map-node${isOnPath ? ' on-path' : ''}${isEndpoint ? ' endpoint' : ''}${isStart ? ' start' : ''}${isEnd ? ' end' : ''}${onNodeClick ? ' clickable' : ''}`}
                 onClick={onNodeClick ? () => onNodeClick(node.id) : undefined}
+                onMouseEnter={() => setActiveNodeId(node.id)}
+                onMouseLeave={() => setActiveNodeId((id) => id === node.id ? null : id)}
+                onFocus={() => setActiveNodeId(node.id)}
+                onBlur={() => setActiveNodeId((id) => id === node.id ? null : id)}
                 role={onNodeClick ? 'button' : undefined}
+                aria-label={onNodeClick ? node.name : undefined}
                 tabIndex={onNodeClick ? 0 : undefined}
                 onKeyDown={
                   onNodeClick
@@ -613,7 +623,7 @@ export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
         </button>
       </div>
       <p className="map-zoom-hint">
-        Scroll, pinch, or use the +/&minus; buttons to zoom, drag to pan. Crowded labels appear as space allows.
+        Select places to show a route. Hover or focus any marker to see its name; zoom or drag to explore.
       </p>
     </div>
   );
