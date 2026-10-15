@@ -81,6 +81,16 @@ export default function App() {
     }
   }
 
+  function handleStartChange(id) {
+    setStartId(id);
+    if (id) setPickTarget('end');
+  }
+
+  function handleEndChange(id) {
+    setEndId(id);
+    if (id) setPickTarget('start');
+  }
+
   function handleModeChange(newMode) {
     setMode(newMode);
     // 'live' only means anything for drive mode (see LiveRoutingClient's class doc) -- switching
@@ -125,8 +135,8 @@ export default function App() {
                 onModeChange={handleModeChange}
                 live={live}
                 onLiveChange={handleLiveChange}
-                onStartChange={setStartId}
-                onEndChange={setEndId}
+                onStartChange={handleStartChange}
+                onEndChange={handleEndChange}
                 onSubmit={handleSubmit}
                 onSwap={handleSwap}
                 loading={status.type === 'loading'}
