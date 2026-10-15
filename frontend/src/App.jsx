@@ -67,6 +67,7 @@ export default function App() {
   function handleSwap() {
     setStartId(endId);
     setEndId(startId);
+    setPickTarget('start');
     findRoute(endId, startId, mode, live);
   }
 
