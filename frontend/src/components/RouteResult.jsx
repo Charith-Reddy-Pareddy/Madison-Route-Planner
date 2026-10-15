@@ -42,6 +42,8 @@ function groupBusLegs(segments) {
   ));
 }
 
+const routeTones = ['route-tone-0', 'route-tone-1', 'route-tone-2', 'route-tone-3'];
+
 export default function RouteResult({ statusType, statusMessage, route, nodesById }) {
   const pathNames = new Map((route?.path ?? []).map((node) => [node.id, node.name]));
   const nameOf = (id, fallback) => fallback ?? pathNames.get(id) ?? nodesById.get(id)?.name ?? id;
@@ -49,6 +51,12 @@ export default function RouteResult({ statusType, statusMessage, route, nodesByI
   const isAccessible = route?.mode === 'accessible';
   const isBus = route?.mode === 'bus';
   const directions = isBus ? groupBusLegs(route.segments) : route?.segments ?? [];
+  const busRouteSequence = directions.reduce((routes, leg) => {
+    if (leg.mode === 'bus' && routes.at(-1) !== leg.busRoute) routes.push(leg.busRoute);
+    return routes;
+  }, []);
+  const routeTone = (routeName) => routeTones[Math.max(0, busRouteSequence.indexOf(routeName)) % routeTones.length];
+  const transferCount = directions.filter((leg) => leg.mode === 'transfer').length;
 
   return (
     <>
@@ -84,34 +92,66 @@ export default function RouteResult({ statusType, statusMessage, route, nodesByI
                 : 'Using precomputed distances (live data was off, or a leg fell back after the live API didn’t respond).'}
             </p>
           )}
-          <ol className="steps">
+          {isBus && busRouteSequence.length > 1 && (
+            <section className="bus-itinerary-summary" aria-label="Bus route overview">
+              <p>
+                <strong>{busRouteSequence.length} bus routes</strong> · {transferCount} {transferCount === 1 ? 'transfer' : 'transfers'}
+              </p>
+              <ol className="bus-route-sequence" aria-label="Route order">
+                {busRouteSequence.map((busRoute, i) => (
+                  <li key={`${busRoute}-${i}`}>
+                    <span aria-hidden="true" className="sequence-number">{i + 1}</span>
+                    <span className={`route-pill ${routeTone(busRoute)}`}>{busRoute}</span>
+                    {i < busRouteSequence.length - 1 && <span className="route-sequence-arrow" aria-hidden="true">→</span>}
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
+          <ol className={isBus ? 'transit-steps' : 'steps'}>
             {directions.map((segment, i) => {
               const from = nameOf(segment.from, segment.fromName);
               const to = nameOf(segment.to, segment.toName);
               if (segment.mode === 'transfer') {
                 return (
-                  <li key={'transfer-' + i}>
-                    <strong>
-                      Transfer at {nameOf(segment.at)}: change from {segment.fromRoute} to {segment.toRoute}.
-                    </strong>
+                  <li className="transit-step transit-transfer" key={'transfer-' + i}>
+                    <span className="transit-step-kind">Transfer</span>
+                    <strong>Change buses at {nameOf(segment.at)}</strong>
+                    <span className="transfer-routes">
+                      <span className={`route-pill ${routeTone(segment.fromRoute)}`}>{segment.fromRoute}</span>
+                      <span aria-hidden="true">→</span>
+                      <span className={`route-pill ${routeTone(segment.toRoute)}`}>{segment.toRoute}</span>
+                    </span>
                   </li>
                 );
               }
               if (segment.mode === 'wait') {
-                return <li key={'wait-' + i}>Wait at {from} (~{formatMinutes(segment.minutes)} min)</li>;
+                return (
+                  <li className="transit-step transit-step-wait" key={'wait-' + i}>
+                    <span className="transit-step-kind">Wait</span>
+                    <strong>{from}</strong>
+                    <span>About {formatMinutes(segment.minutes)} min</span>
+                  </li>
+                );
               }
               if (segment.mode === 'bus') {
                 return (
-                  <li key={'bus-' + i}>
-                    Ride <span className="mode-tag bus">{segment.busRoute}</span> from {from} to {to}
-                    {segment.departureTime ? ' (' + segment.departureTime + '–' + segment.arrivalTime + ')' : ''}
+                  <li className={`transit-step transit-step-bus ${routeTone(segment.busRoute)}`} key={'bus-' + i}>
+                    <span className="transit-step-kind">Ride bus</span>
+                    <strong className={`route-pill ${routeTone(segment.busRoute)}`}>{segment.busRoute}</strong>
+                    <span className="transit-step-stops">{from} <span aria-hidden="true">→</span> {to}</span>
+                    {segment.departureTime && (
+                      <span className="transit-step-time">Departs {segment.departureTime} · Arrives {segment.arrivalTime}</span>
+                    )}
                   </li>
                 );
               }
               if (segment.mode === 'walk') {
                 return (
-                  <li key={'walk-' + i}>
-                    Walk {from} &rarr; {to} ({segment.miles} mi, ~{segment.minutes} min)
+                  <li className="transit-step transit-step-walk" key={'walk-' + i}>
+                    <span className="transit-step-kind">Walk</span>
+                    <strong className="transit-step-stops">{from} <span aria-hidden="true">→</span> {to}</strong>
+                    <span>{segment.miles} mi · about {formatMinutes(segment.minutes)} min</span>
                   </li>
                 );
               }
@@ -121,7 +161,7 @@ export default function RouteResult({ statusType, statusMessage, route, nodesByI
                 </li>
               );
             })}
-            <li className="total">
+            <li className={isBus ? 'transit-total' : 'total'}>
               Total: {route.totalMiles} mi, ~{route.totalMinutes} min
               {isBus ? ' including waits' : isDrive ? ' by car' : ' on foot'}
             </li>
