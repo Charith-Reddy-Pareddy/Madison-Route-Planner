@@ -353,20 +353,11 @@ svg.map:active { cursor: grabbing; }
   stroke: var(--accent);
   stroke-width: 4;
   opacity: 1;
-  stroke-dasharray: var(--road-length);
-  stroke-dashoffset: var(--road-length);
-  animation: draw-route 0.5s ease-out forwards;
+  stroke-dasharray: none;
+  stroke-dashoffset: 0;
 }
 .map-arrow { fill: var(--edge); }
 .map-arrow.on-path { fill: var(--accent); }
-
-@keyframes draw-route {
-  to { stroke-dashoffset: 0; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .map-edge.on-path { animation: none; stroke-dashoffset: 0; }
-}
 
 .map-node circle { fill: var(--panel-bg); stroke: var(--muted); stroke-width: 1.5; transition: fill 0.2s ease, stroke 0.2s ease, r 0.2s ease; }
 .map-node.on-path circle { fill: var(--accent); stroke: var(--accent-strong); }

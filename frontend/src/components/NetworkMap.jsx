@@ -526,10 +526,6 @@ export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
             const onPath =
               pathEdgeSet.has(`${edge.from}->${edge.to}`) ||
               (!edge.oneWay && pathEdgeSet.has(`${edge.to}->${edge.from}`));
-            // Drives the "draw the route" animation: a straight line's own length,
-            // used as its dash length so a full dash-offset hides it and animating
-            // the offset to 0 reveals it end-to-end (see .map-edge.on-path in CSS).
-            const length = Math.hypot(to.x - from.x, to.y - from.y);
             // Keep roads faint in the full-network overview, then bring
             // them forward as zooming narrows the visible area to fewer edges.
             const offPathOpacity = clamp(0.12 + (view.zoom - 1) * 0.07, 0.12, 0.4);
@@ -543,7 +539,7 @@ export default function NetworkMap({ nodes, edges, path, onNodeClick }) {
                 className={onPath ? 'map-edge on-path' : 'map-edge'}
                 vectorEffect="non-scaling-stroke"
                 markerEnd={edge.oneWay ? `url(#${onPath ? 'arrow-on-path' : 'arrow'})` : undefined}
-                style={onPath ? { '--road-length': length } : { opacity: offPathOpacity }}
+                style={!onPath ? { opacity: offPathOpacity } : undefined}
               />
             );
           })}
