@@ -104,7 +104,7 @@ export default function App() {
   return (
     <>
       <header>
-        <h1>Madison Route Planning</h1>
+        <h1>Madison Route Planner</h1>
         <p className="subtitle">
           Plan walking, driving, and scheduled bus trips across Madison.
         </p>
