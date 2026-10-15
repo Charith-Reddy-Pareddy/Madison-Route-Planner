@@ -123,22 +123,23 @@ form label {
   color: var(--text);
 }
 
-select, button {
+select, input:not([type="radio"]):not([type="checkbox"]), button {
   font-size: 0.9rem;
   border-radius: 8px;
   padding: 0.6rem 0.75rem;
   transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
 }
 
-select {
+select, input:not([type="radio"]):not([type="checkbox"]) {
   background: var(--bg);
   border: 1px solid var(--border);
   color: var(--text);
 }
 
-select:hover { border-color: var(--muted); }
+select:hover, input:not([type="radio"]):not([type="checkbox"]):hover { border-color: var(--muted); }
 
 select:focus-visible,
+input:not([type="radio"]):not([type="checkbox"]):focus-visible,
 button:focus-visible {
   outline: none;
   box-shadow: 0 0 0 3px rgba(59, 102, 214, 0.28);
@@ -159,6 +160,29 @@ button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 10px 20
 button:active:not(:disabled) { transform: translateY(0); }
 
 button:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+
+.location-picker { position: relative; }
+.location-picker input { width: 100%; }
+.location-options {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 0.2rem);
+  left: 0;
+  right: 0;
+  max-height: 15rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem;
+  list-style: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-bg);
+  box-shadow: var(--shadow);
+}
+.location-options li { padding: 0.55rem 0.65rem; border-radius: 5px; cursor: pointer; }
+.location-options li:hover, .location-options li.active { background: rgba(59, 102, 214, 0.12); color: var(--accent-strong); }
+.location-empty, .location-error { margin: 0.25rem 0; font-size: 0.85rem; color: var(--muted); }
+.location-error { color: #b42318; }
 
 .swap-button {
   align-self: flex-start;
