@@ -30,6 +30,8 @@ jobs:
       - uses: actions/configure-pages@v5
       - name: Build site
         run: scripts/build-pages.sh _site
+      - name: Check Pages artifact
+        run: node --test test/pages-artifact.test.mjs
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
