@@ -39,6 +39,16 @@ function dayBefore({ year, month, day }) {
   };
 }
 
+function dayAfter({ year, month, day }) {
+  const date = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day) + 1));
+  return {
+    year: String(date.getUTCFullYear()),
+    month: String(date.getUTCMonth() + 1).padStart(2, '0'),
+    day: String(date.getUTCDate()).padStart(2, '0'),
+    weekday: WEEKDAYS[date.getUTCDay()],
+  };
+}
+
 function activeServices(feed, date) {
   const key = dateKey(date.year, date.month, date.day);
   const active = new Set();
@@ -125,6 +135,7 @@ function scheduleEdges(feed, nowAt, today, timezone, stopsById, routesById, trip
   const dates = [
     { date: dayBefore(today), offset: -86400 },
     { date: today, offset: 0 },
+    { date: dayAfter(today), offset: 86400 },
   ];
   const edges = [];
   for (const { date, offset } of dates) {
