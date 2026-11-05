@@ -13,6 +13,11 @@ case "$OUT" in
   *) OUT="$PWD/$OUT" ;;
 esac
 
+if [ -e "$OUT" ]; then
+  printf 'Output path already exists: %s\n' "$OUT" >&2
+  exit 2
+fi
+
 if [ ! -x "$ROOT/frontend/node_modules/.bin/vite" ]; then
   printf '%s\n' 'Install frontend dependencies first: npm ci --prefix frontend' >&2
   exit 1

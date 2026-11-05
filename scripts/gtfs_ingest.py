@@ -10,7 +10,9 @@ import argparse
 import csv
 import io
 import json
+import os
 import sys
+import tempfile
 import urllib.request
 import zipfile
 from datetime import datetime, timezone
@@ -201,14 +203,29 @@ def normalize(tables):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
+        "--input", type=Path,
+        help="use a local GTFS archive instead of downloading the current feed"
+    )
+    parser.add_argument(
         "--output", type=Path, default=Path("frontend/public/metro-gtfs.json"),
         help="normalized output path (default: frontend/public/metro-gtfs.json)"
     )
     args = parser.parse_args()
 
-    request = urllib.request.Request(FEED_URL, headers={"User-Agent": USER_AGENT})
-    with urllib.request.urlopen(request, timeout=60) as response:
-        payload = response.read()
+    if args.input:
+        payload = args.input.read_bytes()
+    else:
+        request = urllib.request.Request(FEED_URL, headers={"User-Agent": USER_AGENT})
+        try:
+            with urllib.request.urlopen(request, timeout=60) as response:
+                payload = response.read()
+        except OSError:
+            cached = Path("data/transit/mmt_gtfs.zip")
+            if not cached.is_file():
+                raise
+            print(f"Using cached GTFS feed: {cached}", file=sys.stderr)
+            payload = cached.read_bytes()
+
     with zipfile.ZipFile(io.BytesIO(payload)) as archive:
         tables = validate(archive)
 
@@ -218,9 +235,16 @@ def main():
         **normalize(tables),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    temporary = args.output.with_suffix(args.output.suffix + ".tmp")
-    temporary.write_text(json.dumps(result, ensure_ascii=False), encoding="utf-8")
-    temporary.replace(args.output)
+    fd, temporary = tempfile.mkstemp(
+        dir=args.output.parent, prefix=f".{args.output.name}.", suffix=".tmp"
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as output:
+            output.write(json.dumps(result, ensure_ascii=False))
+        os.replace(temporary, args.output)
+    finally:
+        if os.path.exists(temporary):
+            os.unlink(temporary)
 
     print(
         f"Validated Madison Metro feed: {len(tables['routes.txt'])} routes, "
