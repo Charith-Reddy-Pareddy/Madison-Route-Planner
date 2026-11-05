@@ -2,6 +2,11 @@ function formatMinutes(minutes) {
   return Math.max(0, Math.round(minutes));
 }
 
+function formatScheduleTime(time, dayOffset = 0) {
+  const day = dayOffset === 1 ? ' (+1 day)' : dayOffset > 1 ? ` (+${dayOffset} days)` : '';
+  return `${time}${day}`;
+}
+
 function groupBusLegs(segments) {
   const grouped = [];
   for (const segment of segments) {
@@ -141,7 +146,10 @@ export default function RouteResult({ statusType, statusMessage, route, nodesByI
                     <strong className={`route-pill ${routeTone(segment.busRoute)}`}>{segment.busRoute}</strong>
                     <span className="transit-step-stops">{from} <span aria-hidden="true">→</span> {to}</span>
                     {segment.departureTime && (
-                      <span className="transit-step-time">Departs {segment.departureTime} · Arrives {segment.arrivalTime}</span>
+                      <span className="transit-step-time">
+                        Departs {formatScheduleTime(segment.departureTime, segment.departureDayOffset)} ·{' '}
+                        Arrives {formatScheduleTime(segment.arrivalTime, segment.arrivalDayOffset)}
+                      </span>
                     )}
                   </li>
                 );

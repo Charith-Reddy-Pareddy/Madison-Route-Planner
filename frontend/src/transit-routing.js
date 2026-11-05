@@ -311,6 +311,8 @@ export function computeTransitRoute(network, feed, startId, endId, now = new Dat
       minutes: Math.ceil((last.arrival - first.departure) / 60),
       departureTime: formatClock(first.departure),
       arrivalTime: formatClock(last.arrival),
+      departureDayOffset: Math.floor(first.departure / 86400),
+      arrivalDayOffset: Math.floor(last.arrival / 86400),
     });
     totalMiles += miles;
     cursorAt = last.arrival;
