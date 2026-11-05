@@ -18,6 +18,8 @@ public final class RouteWebHandler implements HttpHandler {
       "css", "text/css; charset=utf-8",
       "mjs", "text/javascript; charset=utf-8",
       "js", "text/javascript; charset=utf-8",
+      "json", "application/json; charset=utf-8",
+      "svg", "image/svg+xml",
       "csv", "text/csv; charset=utf-8");
 
   private final Path frontendDir;
@@ -63,7 +65,7 @@ public final class RouteWebHandler implements HttpHandler {
       file = dataDir.resolve(name);
     } else {
       String name = requestPath.substring(1);
-      if (name.contains("/") || name.isBlank()) {
+      if (name.isBlank()) {
         return notFound();
       }
       file = frontendDir.resolve(name).normalize();

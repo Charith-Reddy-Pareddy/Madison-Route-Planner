@@ -21,7 +21,7 @@ public final class RouteApiServer {
         Path.of("data/locations.csv"), Path.of("data/roads.csv"));
     HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
     server.createContext("/api/route", new RouteApiHandler(new WalkingRouteService(dataset)));
-    server.createContext("/", new RouteWebHandler(Path.of("frontend"), Path.of("data")));
+    server.createContext("/", new RouteWebHandler(Path.of("frontend/dist"), Path.of("data")));
     server.start();
     System.out.println("Route planner listening at http://localhost:" + server.getAddress().getPort());
   }
