@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { getRouteProgress } from '../../route-progress.js';
 
 function LocationPicker({ id, label, nodes, value, onChange }) {
   const [query, setQuery] = useState('');
@@ -148,7 +149,7 @@ export default function RouteForm({
       <LocationPicker id="route-end" label="End" nodes={sorted} value={endId} onChange={(id) => { onEndChange(id); setFormError(''); }} />
       {formError && <p className="location-error" role="alert">{formError}</p>}
       <button type="submit" disabled={loading}>
-        {loading ? 'Calculating...' : mode === 'drive' ? 'Find driving route' : mode === 'bus' ? 'Find bus route' : 'Find shortest route'}
+        {loading ? getRouteProgress(mode) : mode === 'drive' ? 'Find driving route' : mode === 'bus' ? 'Find bus route' : 'Find shortest route'}
       </button>
     </form>
   );

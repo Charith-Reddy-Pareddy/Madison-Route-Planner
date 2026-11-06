@@ -4,6 +4,7 @@ import RouteForm from './components/RouteForm';
 import RouteResult from './components/RouteResult';
 import NetworkMap from './components/NetworkMap';
 import { getRouteLegend } from '../route-legend.js';
+import { getRouteProgress } from '../route-progress.js';
 
 export default function App() {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
@@ -26,7 +27,7 @@ export default function App() {
 
   const findRoute = useCallback(async (start, end, travelMode, useLive) => {
     const requestId = ++latestRequestId.current;
-    setStatus({ type: 'loading', message: 'Calculating route...' });
+    setStatus({ type: 'loading', message: getRouteProgress(travelMode) });
     setRoute(null);
     try {
       const result = await getRoute(start, end, travelMode, useLive);
