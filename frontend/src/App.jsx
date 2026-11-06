@@ -3,6 +3,7 @@ import { getGraph, getRoute } from './api';
 import RouteForm from './components/RouteForm';
 import RouteResult from './components/RouteResult';
 import NetworkMap from './components/NetworkMap';
+import { getRouteLegend } from '../route-legend.js';
 
 export default function App() {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
@@ -125,6 +126,7 @@ export default function App() {
   }
 
   const networkLoaded = graph.nodes.length > 0;
+  const routeLegend = getRouteLegend(mode);
 
   return (
     <>
@@ -181,11 +183,11 @@ export default function App() {
           />
           <ul className="legend">
             <li><span className="legend-swatch road" /> Road</li>
-            <li><span className="legend-swatch route" /> Shortest route</li>
+            {routeLegend.showRoadRoute && <li><span className="legend-swatch route" /> {routeLegend.label}</li>}
             <li><span className="legend-swatch start" /> Start</li>
             <li><span className="legend-swatch end" /> End</li>
             <li><span className="legend-arrow">&#8594;</span> One-way (arrow points the allowed direction)</li>
-            <li><span className="legend-swatch route-point" /> Along route</li>
+            {routeLegend.showRoadRoute && <li><span className="legend-swatch route-point" /> Along route</li>}
           </ul>
         </section>
       </main>
