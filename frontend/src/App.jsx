@@ -31,7 +31,12 @@ export default function App() {
       const result = await getRoute(start, end, travelMode, useLive);
       if (requestId !== latestRequestId.current) return;
       setRoute(result);
-      setStatus({ type: 'success', message: result.mode === 'bus' ? 'Scheduled bus route found.' : `Shortest route found: ${result.path.length} stop(s).` });
+      const message = result.mode === 'bus'
+        ? 'Scheduled bus route found.'
+        : result.mode === 'drive'
+          ? 'Driving route found.'
+          : `Shortest route found: ${result.path.length} stop(s).`;
+      setStatus({ type: 'success', message });
     } catch (err) {
       if (requestId !== latestRequestId.current) return;
       setStatus({ type: 'error', message: err.message });

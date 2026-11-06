@@ -148,7 +148,7 @@ export default function RouteForm({
       <LocationPicker id="route-end" label="End" nodes={sorted} value={endId} onChange={(id) => { onEndChange(id); setFormError(''); }} />
       {formError && <p className="location-error" role="alert">{formError}</p>}
       <button type="submit" disabled={loading}>
-        {loading ? 'Calculating...' : 'Find shortest route'}
+        {loading ? 'Calculating...' : mode === 'drive' ? 'Find driving route' : mode === 'bus' ? 'Find bus route' : 'Find shortest route'}
       </button>
     </form>
   );
