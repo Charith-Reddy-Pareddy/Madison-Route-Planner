@@ -38,6 +38,12 @@ export default function App() {
     }
   }, []);
 
+  function clearRoute() {
+    latestRequestId.current += 1;
+    setRoute(null);
+    setStatus({ type: 'idle', message: '' });
+  }
+
   useEffect(() => {
     let cancelled = false;
     getGraph()
@@ -75,6 +81,7 @@ export default function App() {
     if (pickTarget === 'start') {
       setStartId(id);
       setPickTarget('end');
+      clearRoute();
     } else {
       setEndId(id);
       setPickTarget('start');
@@ -85,11 +92,13 @@ export default function App() {
   function handleStartChange(id) {
     setStartId(id);
     if (id) setPickTarget('end');
+    clearRoute();
   }
 
   function handleEndChange(id) {
     setEndId(id);
     if (id) setPickTarget('start');
+    clearRoute();
   }
 
   function handleModeChange(newMode) {
