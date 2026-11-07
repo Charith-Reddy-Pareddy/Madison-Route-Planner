@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getRouteProgress } from '../../route-progress.js';
+import { canSwapPlaces } from '../../route-selection.js';
 
 function LocationPicker({ id, label, nodes, value, onChange }) {
   const [query, setQuery] = useState('');
@@ -108,9 +109,10 @@ export default function RouteForm({
 }) {
   const sorted = useMemo(() => [...nodes].sort((a, b) => a.name.localeCompare(b.name)), [nodes]);
   const [formError, setFormError] = useState('');
+  const canSwap = canSwapPlaces(nodes, startId, endId);
 
   function handleSubmit(e) {
-    if (!nodes.some((node) => node.id === startId) || !nodes.some((node) => node.id === endId)) {
+    if (!canSwap) {
       e.preventDefault();
       setFormError('Choose both places from the search results before finding a route.');
       return;
@@ -143,7 +145,7 @@ export default function RouteForm({
         </label>
       )}
       <LocationPicker id="route-start" label="Start" nodes={sorted} value={startId} onChange={(id) => { onStartChange(id); setFormError(''); }} />
-      <button type="button" className="swap-button" onClick={onSwap} aria-label="Swap start and end">
+      <button type="button" className="swap-button" onClick={onSwap} aria-label="Swap start and end" disabled={!canSwap}>
         ⇅ Swap
       </button>
       <LocationPicker id="route-end" label="End" nodes={sorted} value={endId} onChange={(id) => { onEndChange(id); setFormError(''); }} />
