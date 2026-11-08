@@ -85,6 +85,9 @@ export class MinHeap {
  * with the same messages the HTTP API uses for unknown ids / no path found.
  */
 export function computeRoute(network, startId, endId, mode = 'walk') {
+  if (!['walk', 'drive', 'accessible'].includes(mode)) {
+    throw new Error(`unsupported route mode: ${mode}`);
+  }
   const nodeIds = network.nodes.map((n) => n.id);
   if (!nodeIds.includes(startId) || !nodeIds.includes(endId)) {
     throw new Error('unknown intersection id');
