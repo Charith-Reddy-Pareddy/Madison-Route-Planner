@@ -5,6 +5,7 @@ import RouteResult from './components/RouteResult';
 import NetworkMap from './components/NetworkMap';
 import { getRouteLegend } from '../route-legend.js';
 import { getRouteProgress } from '../route-progress.js';
+import { getRouteSuccessMessage } from '../route-success.js';
 
 export default function App() {
   const [graph, setGraph] = useState({ nodes: [], edges: [] });
@@ -33,12 +34,7 @@ export default function App() {
       const result = await getRoute(start, end, travelMode, useLive);
       if (requestId !== latestRequestId.current) return;
       setRoute(result);
-      const message = result.mode === 'bus'
-        ? 'Scheduled bus route found.'
-        : result.mode === 'drive'
-          ? 'Driving route found.'
-          : `Shortest route found: ${result.path.length} stop(s).`;
-      setStatus({ type: 'success', message });
+      setStatus({ type: 'success', message: getRouteSuccessMessage(result) });
     } catch (err) {
       if (requestId !== latestRequestId.current) return;
       setStatus({ type: 'error', message: err.message });

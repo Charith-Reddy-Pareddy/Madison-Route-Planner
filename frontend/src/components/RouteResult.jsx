@@ -26,7 +26,7 @@ export default function RouteResult({ statusType, statusMessage, route, nodesByI
         {statusMessage}
       </div>
 
-      {route && route.path.length > 0 && (
+      {route && route.path.length > 1 && (
         <div className="route-endpoints">
           <span className="endpoint-tag start">{nameOf(route.path[0].id, route.path[0].name)}</span>
           <span aria-hidden="true">&rarr;</span>
@@ -36,7 +36,7 @@ export default function RouteResult({ statusType, statusMessage, route, nodesByI
         </div>
       )}
 
-      {route && (
+      {route && route.path.length > 1 && (
         <>
           <h3 className="section-label">
             {isBus
