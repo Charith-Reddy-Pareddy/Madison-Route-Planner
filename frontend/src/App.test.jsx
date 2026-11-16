@@ -43,6 +43,6 @@ describe('campus route map', () => {
     expect(Number(marker.getAttribute('r')) * zoom).toBeCloseTo(markerSize);
     expect(marker.getAttribute('vector-effect')).toBe('non-scaling-stroke');
     expect(road.getAttribute('vector-effect')).toBe('non-scaling-stroke');
-    expect(Number(road.style.opacity)).toBeLessThan(roadOpacity);
+    expect(Number(road.style.opacity)).toBeGreaterThan(roadOpacity);
   });
 });

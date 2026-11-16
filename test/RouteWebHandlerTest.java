@@ -3,23 +3,35 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 class RouteWebHandlerTest {
 
-  private final RouteWebHandler handler = new RouteWebHandler(
-      Path.of("frontend"), Path.of("data"));
+  @TempDir Path frontendDir;
+  private RouteWebHandler handler;
+
+  @BeforeEach
+  void setUp() throws IOException {
+    Path assets = Files.createDirectories(frontendDir.resolve("assets"));
+    Files.writeString(frontendDir.resolve("index.html"),
+        "<script type=\"module\" src=\"./assets/app.js\"></script>");
+    Files.writeString(assets.resolve("app.js"), "export const app = true;");
+    handler = new RouteWebHandler(frontendDir, Path.of("data"));
+  }
 
   @Test
-  void servesTheAppAndItsModules() throws IOException {
+  void servesTheBuiltAppAndItsAssets() throws IOException {
     RouteWebHandler.Response page = handler.respond("/");
-    RouteWebHandler.Response module = handler.respond("/app.mjs");
+    RouteWebHandler.Response bundle = handler.respond("/assets/app.js");
 
     assertEquals(200, page.status());
-    assertTrue(new String(page.body(), StandardCharsets.UTF_8).contains("app.mjs"));
-    assertEquals("text/javascript; charset=utf-8", module.contentType());
-    assertTrue(new String(module.body(), StandardCharsets.UTF_8).contains("loadNetwork"));
+    assertTrue(new String(page.body(), StandardCharsets.UTF_8).contains("./assets/app.js"));
+    assertEquals("text/javascript; charset=utf-8", bundle.contentType());
+    assertTrue(new String(bundle.body(), StandardCharsets.UTF_8).contains("export const app"));
   }
 
   @Test
@@ -40,6 +52,6 @@ class RouteWebHandlerTest {
   @Test
   void doesNotServePathsOutsideTheFrontend() throws IOException {
     assertEquals(404, handler.respond("/../pom.xml").status());
-    assertEquals(404, handler.respond("/nested/app.mjs").status());
+    assertEquals(404, handler.respond("/nested/app.js").status());
   }
 }

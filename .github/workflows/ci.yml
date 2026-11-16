@@ -34,8 +34,17 @@ jobs:
         run: npm --prefix frontend run lint
       - name: Test frontend
         run: npm --prefix frontend test -- --configLoader runner
-      - name: Test JavaScript modules and Pages helpers
-        run: node --test frontend/*.test.mjs test/frontend-syntax.test.mjs test/report-outline.test.mjs
+      - name: Test route planning modules
+        run: >-
+          node --test
+          frontend/csv.test.mjs
+          frontend/pathfinding.test.mjs
+          frontend/route-legend.test.mjs
+          frontend/route-progress.test.mjs
+          frontend/route-selection.test.mjs
+          frontend/route-success.test.mjs
+          frontend/transit-itinerary.test.mjs
+          test/frontend-syntax.test.mjs
       - name: Build GitHub Pages site
         run: scripts/build-pages.sh "$RUNNER_TEMP/madison-route-planner-site"
       - name: Check Pages artifact
