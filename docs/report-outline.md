@@ -1,7 +1,15 @@
 # Route planning report outline
 
 ## Research question
-How do walking route choices and measured graph performance change with the Madison network and the available routing preferences?
+Across nested Madison-centered OpenStreetMap walking graphs from 100 to 1,000,000 nodes, how do Dijkstra's graph-build time, search time, and route distances change, and what can these measurements tell us about performance as network size grows?
+
+## Intended audience and scope
+This study is for readers evaluating the route planner's shortest-path performance on the curated Madison network and a larger real-road graph. The scale comparison uses nested connected prefixes of one Wisconsin OpenStreetMap snapshot. It does not compare routing algorithms or establish performance on other machines or map extracts.
+
+The supporting questions are:
+- How do graph-build time and median search time change at each network size?
+- How does mean target-route distance change alongside search time, and why does that limit conclusions about graph size alone?
+- How do the single Madison-centered seed, five targets per size, one OSM snapshot, and one machine limit the findings?
 
 ## Network data
 The current data contains 57 mapped locations, 212 directed road records, and 108 grouped location connections. Of the directed records, 86 include stairs and 188 include accessible mileage. These counts are summarized from `data/locations.csv` and `data/roads.csv` and checked by `test/report-outline.test.mjs`.

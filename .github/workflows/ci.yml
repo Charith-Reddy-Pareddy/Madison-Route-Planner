@@ -45,6 +45,7 @@ jobs:
           frontend/route-success.test.mjs
           frontend/transit-itinerary.test.mjs
           test/frontend-syntax.test.mjs
+          test/report-outline.test.mjs
       - name: Build GitHub Pages site
         run: scripts/build-pages.sh "$RUNNER_TEMP/madison-route-planner-site"
       - name: Check Pages artifact

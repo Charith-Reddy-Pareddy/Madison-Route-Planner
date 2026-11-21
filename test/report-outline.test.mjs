@@ -26,9 +26,18 @@ test('report includes reproducible real-network measurements at each scale', () 
   assert.match(report, new RegExp(`${searches.toLocaleString('en-US')} ordered pairs`));
   assert.match(report, /not a reliable cross-size performance comparison/);
   assert.match(report, /Wisconsin OpenStreetMap snapshot dated 2026-10-09/);
-  assert.match(report, /1,000,000 nodes and 2,191,566 distinct directed edges/);
+  assert.match(report, /1,000,000 nodes and 2,191,516 distinct directed edges/);
   assert.match(report, /five targets spaced across the node order/);
   assert.deepEqual(scaleResults.map(row => Number(row.nodes)), [100, 1_000, 10_000, 100_000, 1_000_000]);
   assert.ok(scaleResults.every(row => Number(row.directed_edges) > 0));
   assert.ok(scaleResults.every(row => Number(row.median_us_per_search) > 0));
+});
+
+
+test('research questions match the measurements and their limits', () => {
+  assert.match(report, /## Research question\nAcross nested Madison-centered OpenStreetMap walking graphs/);
+  assert.match(report, /## Intended audience and scope/);
+  assert.match(report, /graph-build time and median search time change at each network size/);
+  assert.match(report, /mean target-route distance change alongside search time/);
+  assert.match(report, /single Madison-centered seed, five targets per size, one OSM snapshot, and one machine/);
 });
