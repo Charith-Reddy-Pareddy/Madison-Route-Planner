@@ -49,3 +49,8 @@ jobs:
     steps:
       - id: deployment
         uses: actions/deploy-pages@v5
+      - uses: actions/checkout@v6
+      - name: Verify published site
+        env:
+          PAGES_URL: ${{ steps.deployment.outputs.page_url }}
+        run: node --test test/pages-live.test.mjs
