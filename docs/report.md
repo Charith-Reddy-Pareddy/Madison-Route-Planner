@@ -2,15 +2,15 @@
 
 ## Research question
 
-How do walking route choices and measured graph performance change with the Madison network and the available routing preferences?
+Across nested Madison-centered OpenStreetMap walking graphs from 100 to 1,000,000 nodes, how do Dijkstra's graph-build time, search time, and route distances change, and what can these measurements tell us about performance as network size grows?
 
 ## Study scope
 
-This report considers the curated Madison walking graph and a larger, connected regional graph. The curated graph represents campus and nearby places as 57 mapped locations connected by 212 directed road records. The regional graph is drawn from mapped foot-accessible streets and paths around Madison. The two graphs serve different purposes: the curated graph reflects routes between places shown in the app, while the regional graph makes it possible to measure Dijkstra search on networks up to one million nodes.
+This report measures Dijkstra's shortest-path performance on two different walking graphs. The curated Madison graph represents campus and nearby places as 57 mapped locations connected by 212 directed road records. The regional graph is a connected subset of mapped foot-accessible streets and paths, tested as nested prefixes up to one million nodes. The curated graph reflects places shown in the app; the regional graph provides the scale measurements. This study does not compare routing algorithms or establish performance on other machines or map extracts.
 
 ## Data sources
 
-The curated place coordinates and road records are stored in [`data/locations.csv`](../data/locations.csv) and [`data/roads.csv`](../data/roads.csv). Their sources and distance-generation process are documented in [`data/sources.md`](../data/sources.md). Place coordinates represent locations rather than building entrances; road distances follow mapped walking connections.
+The curated place coordinates and road records are stored in [`data/locations.csv`](../data/locations.csv) and [`data/roads.csv`](../data/roads.csv). Their sources and distance-generation process are documented in [`data/sources.md`](../data/sources.md), with a claim-by-claim summary in the [research evidence review](research-evidence.md). Place coordinates represent locations rather than building entrances; road distances follow mapped walking connections.
 
 For the scale measurement, the graph was extracted from Geofabrik's Wisconsin OpenStreetMap snapshot dated October 9, 2026 ([source extract](https://download.geofabrik.de/north-america/us/wisconsin-261009.osm.pbf)). The extraction is centered on Madison and uses real mapped ways tagged for foot access. It excludes selected non-walkable or unsuitable ways and honors explicit `oneway:foot` restrictions. The data is made available under the Open Database License; attribution is given to OpenStreetMap contributors and Geofabrik.
 
@@ -18,7 +18,7 @@ For the scale measurement, the graph was extracted from Geofabrik's Wisconsin Op
 
 The curated graph measurement searches all ordered pairs of distinct locations. Three fresh JVM processes each use three warm-up rounds and seven measured rounds. The reported value is the median search time per pair within each process.
 
-The scale benchmark uses the repository's `DijkstraGraph` with nested, connected prefixes of 100, 1,000, 10,000, 100,000, and 1,000,000 OSM nodes. The prefixes are formed by breadth-first traversal from the eligible OSM node nearest central Madison. For each graph size, searches run from that seed to five targets spaced through the prefix's node order. One warm-up round precedes three measured rounds. Graph construction time is measured separately from route-search time. Edge costs are great-circle distances between consecutive OSM way nodes, expressed in miles.
+The scale benchmark uses the repository's `DijkstraGraph` with nested, connected prefixes of 100, 1,000, 10,000, 100,000, and 1,000,000 OSM nodes. The prefixes are formed by breadth-first traversal from the eligible OSM node nearest central Madison. For each graph size, searches run from that seed to five targets spaced through the prefix's node order. One warm-up round precedes three measured rounds. Graph construction time is measured separately from route-search time and includes reading the full extracted edge CSV for each size. Edge costs are great-circle distances between consecutive OSM way nodes, expressed in miles.
 
 The scale results were collected with Java 21.0.4 on macOS aarch64, with eight processors available to the JVM. The benchmark implementation, filtering rules, source-file checksum, commands, and raw measurements are recorded in [`benchmarks/README.md`](../benchmarks/README.md) and [`benchmarks/osm-scale-results.csv`](../benchmarks/osm-scale-results.csv).
 
@@ -26,7 +26,17 @@ The scale results were collected with Java 21.0.4 on macOS aarch64, with eight p
 
 All 3,192 ordered pairs in the curated Madison graph had a walking route. Median search times across the three fresh JVM processes were 9.186, 6.996, and 12.343 microseconds. Their median was 9.186 microseconds, with a range of 6.996–12.343 microseconds.
 
+**Table 1. Median walking-route search time per pair in each fresh JVM process (µs).**
+
+| Process | Median search time (µs) |
+| ---: | ---: |
+| 1 | 9.186 |
+| 2 | 6.996 |
+| 3 | 12.343 |
+
 The scale measurements show the repository's Dijkstra implementation routing over real, connected OSM graph prefixes. Values below are medians from three measured rounds; each round searches five destinations from the central Madison seed.
+
+**Table 2. Graph build and route-search measurements across nested OSM prefixes.**
 
 | Nodes | Directed edges | Build time (ms) | Median search (µs) | Mean target route (mi) |
 | ---: | ---: | ---: | ---: | ---: |
@@ -46,4 +56,4 @@ The curated graph represents 57 selected places and their mapped connections; th
 
 - Curated Madison locations and route-distance methods: [`data/sources.md`](../data/sources.md), the [UW–Madison Campus Map](https://map.wisc.edu/), and [City of Madison Parks GIS](https://maps.cityofmadison.com/arcgis/rest/services/Public/OPEN_DATA/MapServer/24).
 - Regional OSM network: [Geofabrik's Wisconsin extract](https://download.geofabrik.de/north-america/us/wisconsin-261009.osm.pbf), with data from OpenStreetMap contributors under the Open Database License. The extract date and checksum are recorded in [`benchmarks/README.md`](../benchmarks/README.md).
-- Benchmark implementation and raw measurements: [`src/DijkstraGraph.java`](../src/DijkstraGraph.java), [`src/OsmScaleBenchmark.java`](../src/OsmScaleBenchmark.java), and [`benchmarks/osm-scale-results.csv`](../benchmarks/osm-scale-results.csv).
+- Benchmark implementation and raw measurements: [`src/DijkstraGraph.java`](../src/DijkstraGraph.java), [`src/OsmScaleBenchmark.java`](../src/OsmScaleBenchmark.java), and [`benchmarks/osm-scale-results.csv`](../benchmarks/osm-scale-results.csv). Source-to-claim limits are summarized in [`docs/research-evidence.md`](research-evidence.md).
