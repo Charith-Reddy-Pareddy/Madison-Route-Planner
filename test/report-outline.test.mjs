@@ -41,3 +41,14 @@ test('research questions match the measurements and their limits', () => {
   assert.match(report, /mean target-route distance change alongside search time/);
   assert.match(report, /single Madison-centered seed, five targets per size, one OSM snapshot, and one machine/);
 });
+
+
+test('research evidence maps claims to sources and limitations', () => {
+  const evidence = readFileSync(new URL('../docs/research-evidence.md', import.meta.url), 'utf8');
+  assert.match(report, /research evidence review.*research-evidence\.md/);
+  assert.match(evidence, /locations\.csv.*roads\.csv.*data\/sources\.md/);
+  assert.match(evidence, /Geofabrik Wisconsin OSM extract/);
+  assert.match(evidence, /osm-scale-results\.csv/);
+  assert.match(evidence, /one machine, one Madison-centered seed, and five targets per size/);
+  assert.match(evidence, /Open Database License/);
+});

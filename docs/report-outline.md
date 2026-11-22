@@ -44,4 +44,4 @@ The benchmark starts each search at the Madison seed and chooses targets at 20%,
 Compare the measured scaling with the routing behavior users can observe. Separate limitations of the benchmark setup from limitations of the Madison data and the route planner.
 
 ## Sources and reproducibility
-Cite the data sources in `data/sources.md` and link each reported measurement to its raw output and command.
+The [research evidence review](research-evidence.md) maps each claim to its source and states its limits. Cite the data sources in `data/sources.md` and link each reported measurement to its raw output and command.
