@@ -1,4 +1,4 @@
-# Walking route choices and graph scale in Madison
+# Walking graph scale and route measurements in Madison
 
 ## Research question
 

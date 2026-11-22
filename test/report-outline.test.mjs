@@ -6,6 +6,7 @@ import { parseCsv } from '../frontend/csv.mjs';
 const locations = parseCsv(readFileSync(new URL('../data/locations.csv', import.meta.url), 'utf8'));
 const roads = parseCsv(readFileSync(new URL('../data/roads.csv', import.meta.url), 'utf8'));
 const report = readFileSync(new URL('../docs/report-outline.md', import.meta.url), 'utf8');
+const paper = readFileSync(new URL('../docs/report.md', import.meta.url), 'utf8');
 const scaleResults = parseCsv(readFileSync(new URL('../benchmarks/osm-scale-results.csv', import.meta.url), 'utf8'));
 
 test('report network counts match the real project CSV data', () => {
@@ -51,4 +52,17 @@ test('research evidence maps claims to sources and limitations', () => {
   assert.match(evidence, /osm-scale-results\.csv/);
   assert.match(evidence, /one machine, one Madison-centered seed, and five targets per size/);
   assert.match(evidence, /Open Database License/);
+});
+
+
+test('PDF outline follows the report and its evidence', () => {
+  assert.match(paper, /^# Walking graph scale and route measurements in Madison/m);
+  for (const heading of ['Question and scope', 'Data and provenance', 'Measurement method', 'Results', 'Discussion and limitations', 'Sources and reproduction']) {
+    assert.ok(report.includes(`**${heading}**`), `outline includes ${heading}`);
+  }
+  for (const heading of ['## Research question', '## Study scope', '## Data sources', '## Measurement method', '## Results', '## Discussion and limitations', '## Sources']) {
+    assert.ok(paper.includes(heading), `report includes ${heading}`);
+  }
+  assert.match(report, /research evidence review.*research-evidence\.md/);
+  assert.match(report, /osm-scale-results\.csv/);
 });

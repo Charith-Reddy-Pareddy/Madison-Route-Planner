@@ -40,8 +40,17 @@ Each size used one warm-up round followed by three measured rounds. A round sear
 
 The benchmark starts each search at the Madison seed and chooses targets at 20%, 40%, 60%, 80%, and 100% of each prefix's breadth-first order. The increasing route distances mean the timings reflect both larger graphs and longer queries. These are measurements from one machine and one OSM snapshot; they should not be read as a controlled comparison of graph size alone. Graph build time includes reading the full extracted edge CSV for each graph size.
 
-## Discussion
-Compare the measured scaling with the routing behavior users can observe. Separate limitations of the benchmark setup from limitations of the Madison data and the route planner.
+## Research PDF structure
+Use the report draft in `docs/report.md` as the source for the PDF, in this order:
+
+1. **Question and scope** — state the research question, intended audience, and what the measurements can and cannot answer.
+2. **Data and provenance** — distinguish the curated Madison graph from the dated regional OSM graph; link the source review.
+3. **Measurement method** — explain graph construction, search targets, warm-up and measured rounds, runtime, and hardware.
+4. **Results** — show the curated-network timing summary and scale table with units; cite the checked-in results CSV.
+5. **Discussion and limitations** — explain that target distances grow with graph size, so these measurements do not isolate node count as the sole cause of slower searches.
+6. **Sources and reproduction** — include the OSM snapshot date and checksum, commands, and required OpenStreetMap attribution.
+
+Before export, verify every number against its CSV or benchmark output, keep units beside measurements, and cite sources next to the claims they support.
 
 ## Sources and reproducibility
 The [research evidence review](research-evidence.md) maps each claim to its source and states its limits. Cite the data sources in `data/sources.md` and link each reported measurement to its raw output and command.
