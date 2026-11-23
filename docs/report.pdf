@@ -1,0 +1,241 @@
+%PDF-1.4
+%“Œ‹ž ReportLab Generated PDF document (opensource)
+1 0 obj
+<<
+/F1 2 0 R /F2 3 0 R /F3 4 0 R /F4 13 0 R
+>>
+endobj
+2 0 obj
+<<
+/BaseFont /Helvetica /Encoding /WinAnsiEncoding /Name /F1 /Subtype /Type1 /Type /Font
+>>
+endobj
+3 0 obj
+<<
+/BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding /Name /F2 /Subtype /Type1 /Type /Font
+>>
+endobj
+4 0 obj
+<<
+/BaseFont /Courier /Encoding /WinAnsiEncoding /Name /F3 /Subtype /Type1 /Type /Font
+>>
+endobj
+5 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (../data/locations.csv)
+>> /Border [ 0 0 0 ] /Rect [ 309.9384 456.9 409.2984 467.94 ] /Subtype /Link /Type /Annot
+>>
+endobj
+6 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (../data/roads.csv)
+>> /Border [ 0 0 0 ] /Rect [ 429.7592 456.9 507.0392 467.94 ] /Subtype /Link /Type /Annot
+>>
+endobj
+7 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (../data/sources.md)
+>> /Border [ 0 0 0 ] /Rect [ 307.3808 444.1 390.1808 455.14 ] /Subtype /Link /Type /Annot
+>>
+endobj
+8 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (research-evidence.md)
+>> /Border [ 0 0 0 ] /Rect [ 57.84 431.3 162.1404 442.34 ] /Subtype /Link /Type /Annot
+>>
+endobj
+9 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (https://download.geofabrik.de/north-america/us/wisconsin-261009.osm.pbf)
+>> /Border [ 0 0 0 ] /Rect [ 94.1524 386.9 151.9284 397.94 ] /Subtype /Link /Type /Annot
+>>
+endobj
+10 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (../benchmarks/README.md)
+>> /Border [ 0 0 0 ] /Rect [ 57.84 164.2 168.24 175.24 ] /Subtype /Link /Type /Annot
+>>
+endobj
+11 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (../benchmarks/osm-scale-results.csv)
+>> /Border [ 0 0 0 ] /Rect [ 188.7008 164.2 365.3408 175.24 ] /Subtype /Link /Type /Annot
+>>
+endobj
+12 0 obj
+<<
+/Annots [ 5 0 R 6 0 R 7 0 R 8 0 R 9 0 R 10 0 R 11 0 R ] /Contents 28 0 R /MediaBox [ 0 0 612 792 ] /Parent 27 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 
+  /Trans <<
+
+>> /Type /Page
+>>
+endobj
+13 0 obj
+<<
+/BaseFont /ZapfDingbats /Name /F4 /Subtype /Type1 /Type /Font
+>>
+endobj
+14 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (../data/sources.md)
+>> /Border [ 0 0 0 ] /Rect [ 300.4564 230.4 383.2564 241.44 ] /Subtype /Link /Type /Annot
+>>
+endobj
+15 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (https://map.wisc.edu/)
+>> /Border [ 0 0 0 ] /Rect [ 403.7172 230.4 514.1356 241.44 ] /Subtype /Link /Type /Annot
+>>
+endobj
+16 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (https://maps.cityofmadison.com/arcgis/rest/services/Public/OPEN_DATA/MapServer/24)
+>> /Border [ 0 0 0 ] /Rect [ 537.154 230.4 552.9964 241.44 ] /Subtype /Link /Type /Annot
+>>
+endobj
+17 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (https://maps.cityofmadison.com/arcgis/rest/services/Public/OPEN_DATA/MapServer/24)
+>> /Border [ 0 0 0 ] /Rect [ 69.84 217.6 159.3192 228.64 ] /Subtype /Link /Type /Annot
+>>
+endobj
+18 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (https://download.geofabrik.de/north-america/us/wisconsin-261009.osm.pbf)
+>> /Border [ 0 0 0 ] /Rect [ 169.5404 198.8 290.4192 209.84 ] /Subtype /Link /Type /Annot
+>>
+endobj
+19 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (../benchmarks/README.md)
+>> /Border [ 0 0 0 ] /Rect [ 343.9264 186 454.3264 197.04 ] /Subtype /Link /Type /Annot
+>>
+endobj
+20 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (../src/DijkstraGraph.java)
+>> /Border [ 0 0 0 ] /Rect [ 285.0924 167.2 406.5324 178.24 ] /Subtype /Link /Type /Annot
+>>
+endobj
+21 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (../src/OsmScaleBenchmark.java)
+>> /Border [ 0 0 0 ] /Rect [ 69.84 154.4 213.36 165.44 ] /Subtype /Link /Type /Annot
+>>
+endobj
+22 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (../benchmarks/osm-scale-results.csv)
+>> /Border [ 0 0 0 ] /Rect [ 236.3784 154.4 413.0184 165.44 ] /Subtype /Link /Type /Annot
+>>
+endobj
+23 0 obj
+<<
+/A <<
+/S /URI /Type /Action /URI (research-evidence.md)
+>> /Border [ 0 0 0 ] /Rect [ 132.2068 141.6 270.2068 152.64 ] /Subtype /Link /Type /Annot
+>>
+endobj
+24 0 obj
+<<
+/Annots [ 14 0 R 15 0 R 16 0 R 17 0 R 18 0 R 19 0 R 20 0 R 21 0 R 22 0 R 23 0 R ] /Contents 29 0 R /MediaBox [ 0 0 612 792 ] /Parent 27 0 R /Resources <<
+/Font 1 0 R /ProcSet [ /PDF /Text /ImageB /ImageC /ImageI ]
+>> /Rotate 0 
+  /Trans <<
+
+>> /Type /Page
+>>
+endobj
+25 0 obj
+<<
+/PageMode /UseNone /Pages 27 0 R /Type /Catalog
+>>
+endobj
+26 0 obj
+<<
+/Author (Madison Route Planner project) /CreationDate (D:20261123055332-06'00') /Creator (\(unspecified\)) /Keywords () /ModDate (D:20261123055332-06'00') /Producer (ReportLab PDF Library - \(opensource\)) 
+  /Subject (Madison walking graph measurements) /Title (Walking graph scale and route measurements in Madison) /Trapped /False
+>>
+endobj
+27 0 obj
+<<
+/Count 2 /Kids [ 12 0 R 24 0 R ] /Type /Pages
+>>
+endobj
+28 0 obj
+<<
+/Filter [ /ASCII85Decode /FlateDecode ] /Length 2749
+>>
+stream
+Gatm<9lo&Y'#!U4oI\3$$/pdb\NXhDA(d?9AS!0*Elhku$qWheL7&'1/&-O?cN#(9aeJ#t=dDTd0\t4VhWo%^jPsTTJ#=U?^DD"^+eTsR`JT9"MeV^<XqkZ"SU%Pu5G+&sS'L"A+E&;*P@RFt+4%TQG%VOa!cJk'F:rqaKM%[Y^)&'NpO_hYm+rm[]a8U@Dg1oLfPMVgB9n5"$0a=N%9hB;I?VI9-F>2cr;-!_cZ_=?l1X7hM_"Yse)fc==1:R67(66A=-pB\rJ*So/?XGt`LjO4#M\I4M[k/n%UBHUAf\d7S86H@#X^6PXUi1)i]aQs[+8]u+d7dMP,L.aWi7;0;OBqs;HC1C\1ucW1@_5tnp\VeYjfD`GJA1@QBQ%$J'sK9iQqI1Srac,6%G>I@2),YkXjESMB^oE6QS^EY].VFHJS8>M=][<.'Mi<A@YRfJWhas)9n;i'A`#f$mLIc+Q:*)oMukZFLn0\)JSL7W:e7pp?!`+&*I9_*!jW7K`08=Oh+5o1577qQWY,UEJfiKN=.[L=l%V3b5,:XBf?I$Tp8Y)"hmd?U1!'Z56%NQA^ZNNUNVkNHCt4_De^kQkWs6,T,oYT]Z@%s90&_)"RaGS@dp30<@SHS)c<`lHb599.2<TJ)oV.ELK)HkTZ3'q@KY=V]i)H&/UHH/cW]e%^*f-E/TDK41]KKOoORC/DjKt+]#buo9!spSm)JYGm6Z_C?VC*%P8hqjX*!1:bmZ?qAqN01_K[TrbqOO@&FQ)U7TM%tU8jhN_5"t=;VGe=5`r\17ilh^cDE$*jd*6+CfX+*nr^A7i&i5GP:;c+]>Z[^8d.!PlW$s,PdeZ\&<`4<g3qRFi0R-&c<;U&>iQ]!*5[\SE&$"c1eT'/;QJ*q8u[+f;E/+U-.Ke6coW=0)F/E33$N[Wi&n(<$f#X.9EA,oNHnA08:5<sE#9VY%j!=\MWmlrd-iG"+eY:^dQ@?"4&#Ou<i^uq)qoX6eV<R+48GI\`o8OJ=C3LR7[72OV<&J*:)%K?o6O=R;OVPKYq0qe/F<eQ1np4PEZCR8,%;h4!&8HM4,.-VqPeN.Flp=Q[324_NJJT2N/+:$iID=3Pe8F7;;"h(g&?ZjH:?d<KOaq5O7J@K)5.P[PPtWMcAJ?1i6AN$^FG9,fXAQQ<e\%CM>\=7OQYB3,1O@*"h+h6::u[,#Cc#.^)sg#g+'ds6u6GHU[N`\?OnHHI#g,m/n?$qa=CLMXh*pl6OX9".i*K)cURTe6e!(O9'Fo(L2:,e,kY(,cp%D&DH]h22TMtmCs)<%f6^sd"Bc8H)Db^C8nr\eVA\]M%8E_JL<9+ZiFu#3ATisK,MI^9/6IVIbOP.CCd11mb#7HD<[PEL]]On8g'c$>_3EOG,^8t8f44O?1[O`@5*0B0N:il6JL4UL=^&$tgVWp7@;TAm=/m[uDVp"*na23*X3VPV8,+*!QtkNomjR_#+H1Y>U4;`HZZs:,(FV43mu5Ue"'Y%djkg<>?e4D&^$Lu2LFU_e-l3tCUcqDY&keeQUCdHsUHPOanpK)?R7_9m.;I!V]l2>&/S,H/T=mC[O!sY<K`3rT8U^g`%\9.87ksPSO04YRl^94NX*q1Mq@;47X"bAF-sh=f+&TSeH>Uj-[O%8Fan=l\\d*reOqnL.3?no5XXgcSN"Nmk),E/UC%Bu,Z^\82NN/6*TPfZMc0K"A4\'e;id\8aVd)?>T.'J[$U&i-VCs$p'\T.+Hk:R3m5@rk?(O&D`0G$cd#NRt&J$,DOf5PDZK\*jc6'8!?,C#:O_)"\IHP,4-oag!9QpE)<S$J!9EEgmUTu-,_\m(-2k37,G=VhuZi^A&2Yqb+P/Z0Vj9QZ-30ooD8dDZ?.7AtX/;]DLQf"r-9ue"^XUKig:MOa5mY!45B]RM]<LM$aOdrc/O0$%DFd_#Qj5P\>)T`:t.$QL1Tn@u;L:\o#W)[s/RB?4L>GmLX3qSVb0KobU1A-h!lk#[J/Q!-=-n4nNX`\tGP66l,d%P(tl@t"RI;=<t,?qT]G<?dcgO5iUA78da[F6<`gV8/!!]NHW3H%,ZhV;DcTTSYdj8.!%WgaB^d$h&mN)r85:%7[=C'4.6ilWX47D?4DICEQr(M`D+&nc9dT0/7o"BO,2So6L2,8PG1T(]8f`lHIJRC]@Y;h>#XVni!@BFiA:CRuir()7RN2aGf;@srB1q8"'Gj)j(ngnUA(#r_SsCh(r5^jUr5Ri@AO'%Jt0[SUKhldcu2=TDt_*j*og+cQ`qnIWL+$BWF[15D5)27pS;^r:^2PM'-f:NsQVBt%O1!-r\*f2H6qQ`i9TW5iVTdpb#hp\'r@bp>p$hTHVuq;B[)jmHG+5iFRVff!B.\)^Ec"A-*FUL3=%+AlhN\M4VB06U]-cQ5Jfo+Q$&h1E_?H5"'jriD%APjZ/?M%_cN6FMNp+W*XP#VEf?5o%6Nm'2Ji/Om(93te'g,]5\6RBJPlVg5_XoS![GjQo/G/Xls,n"_'Z[tU)QX/.%K\3PW.[-OUI%(N_H7)O2`IX7'hPj+4j'EDt,i/$4JWu4!Fg6oijY-\"bc#iEF\[]>aI"-Qe@Rkk;ZnX859KBOa)7Na/H2]dX:\:T(2^I9A-]coML\pf@/RBYg$_e4DaG8<VIA-2jRj$Kn1_>*,Dl(LLlXr'hfPrPnH)Gsqf6c^&eosb)%-Os-7#:.kC!-fYiXl<GpAti:;NB2\Q>Q'3m;iMjqH6M`.nEXDhQ5O\r6i;T@S^Y:#O,=gX8~>endstream
+endobj
+29 0 obj
+<<
+/Filter [ /ASCII85Decode /FlateDecode ] /Length 3024
+>>
+stream
+Gb!;f8U&oY'#*[5e1F96fg7XkjQ&bi8Y0KR&eeW"B`Up?()@)`LiInB<&HS^&d_IU]QrO3!4l%nf<rF7/H!c;^JP4)H3"i^ikP^KQG=O'^u@L^0$aGW@tAEL!O0?M*1I$<"a@WkDVgp=%lS&\\=<^4po_M>%l/)eMfGr4:Z;#kckbOqQ\^DKAS+"5@0cf8T($#6mqFFn7;M.6SG=3W1-!$pp%I"llORrUrQ!n15/)O>iPXad^]hNujmD01RlCA%&(c`_+(=[C(-`Cl:,mT%2LAL^%Y53#ok?g@,(pNO(.O$S14;^aHak`jH3H?mW</L.:_n2M+B)1iV92bDkq+Wul+&G<dE2P[Z*j+G[!0:62sU!bIRG'!@a&9s#dSG^bT/P&k+%Ys?cY<nPV]gIE?]JV1j[@b\[@T3["9dL'Wb:@CRLEKjIdb^?'\*di3tqS?sOP1dMb<AIhnWV5QAfJA:H)BLR.A)[mH".*\d#$NZMcKk-f2l$9>g5=Q!?`).bEO-l":_6=TT!h;CH&JV?j4$,iWP+Zf.+@+h7;hJgJ*MJ"hL7Y/R^k!W=kMP<<GSVA21DPL?1F4V/?,7FUr\D^q-_7aFo%7"8c\b59s-[Rf>A`nX)NdBkKhL();+4Fj8/g98+G<clt"VWVfas:4S(5@TDR=^2WVTC*Ta"ZX<a6>P\qrLZBY[*GTbe_W:@u/_NQ#jjMJ%GO()Ktf>cOoZT*dbe7BBufY4;M.^7JBnl%RWV2;L@*Fs8Db,-b<FYFNk7KViF9a?&OK>2nHPq35gCqT!)+_IC=2,kZ+m=$J.nX/p'u+jjtS2]M6+&kc0l/AF%b3PZ:WB->?=4.ipG-QV+,2Ll+;r;5Ia3^:e9fgq$J.jDUmlBRg#Z9P^K`:8Q$,Q6ZT%+-!h*aH1nNHFZ^ab[^TEP>'1p)l8Y513lh1.ue!TOa7?A+r%AJ.9stSd7)p`ek3nkH,oT0_:me;2$JVV`Xm?:P/]l#T=;X[`re(H$VZ[ClI6aBM>?iNm5RU%K[@l6b?R-.NE[d.bQ#HgbcT>-jbEp-[au8LnsSZ$0;AA&.@[*-iqig/KGC5u_2DF.2@+-*HZggFgYBXk,@8<"\!@ja,9.+bT)19e>Ue`5amrb<D%Vbb,mS4O@$8`F=ed+,KTY3<-krQ+BZ@U-*"e3?@M3ijJ2rJTY@9Oh9Z#"_<Y4W$BSME?4"Y+dJVm$$M4*<!=`q6AKN74=/@>-jY=$8SbQ>gtQLBj.@M39T`k'b#dkt-L@iY`28U(PgB"Pl-/uI$3Ad(A>I")hJ;jgL%cJ/NeFl8X?T>b('m,p6'-\lEs.!//3SD*DT3?i95UY3j#>pfLJloKAbdh2mAT0(7],,7hA9,?Hhs)JWf'$=)HQmSa#&A<8&JfR+Ri9$e@+li9@\M6Ygo@t4LQd#-BnM,kP*JQ0GF1dO*D"-hc!Z+AO2MQ'ELE"tnW4s8eXC5P`3+[\U#e.<p.]mjFK1Nkb%CF?`UqIgMD9FY1T[iIV=EQ1@30%%OlYcCk;2\q.%K8/!#_VWb;2a8<-<NPm!s"C2R\ihM[FR/eTuK;kZD<n[lu2A30l3<NT.#H#GM[DQ2:jDnX_?3/bB<XrA7`b,.CE!`!hK7aoSfY-d>DNtnd_-=^k:i\58P&[XNcF5mHsE),$0jPBhB<+e/Qlp^KMp%au]!((3?LkII-SB)]CofW`l:PmV96^Wmr4Yfaa"_=QX%ShtR&5rgBW0?,P9CI7R@eO!GXObkq^6Kd7AhUP&d=7^B&XjKXXdk*->pT;]VWk%$RF)3bFR01lCfJX\,[FHK1[JmNu+W:L@lfnSS7]TK9Q?7nOA`C?+sA#MkjZ)NcQ:Ih2C1[i]K0<.Z:F,%]_V-93X)s(=FEnUpFeu=VL/<(a7&i."(j7@H27gT+UWS>e)&h2\tZ:nt[eLTF(0nNY1S"b9aVFC.=)Qa'\Z<X,0d<:#i1sMdehS:"+Mf5'KA=^`[l??e)Cb9?dLuqHu[.Ppl/S0U`1/g@%7^W&ufT6(=:BGh%gL^YI8-PFHU3!_#:nUCROhsd0)p#GNa7j5VVa68%.EuKf]&-OlkAlP[=3OA/Q:4ZqARrN+<>$%hjB'bTa[qgu<Ch6,(`4X3Ou`>'f,;s527['oo9=JWOJ`D"[8AD$Vr6g@.hoARh>1o>4BaGrW3qe#@V\Y:eM15Y_4sp?Wf=`;oK/I`,7K<`GXF:@NA:E)V/%:oP,T+SAlZAkANHcK(*s`?C*ascU?j54L^\B,PsdJ2Ag]M'6U%r1ViJFaa5PdI/u&MI[?`1agC\fp4S4Gccar)op2%!\F,jrcljfPlo>Z&cQ>['mrE/B>]A-7n:*kH%b\ef'!@dG7Kn.:n[[>)aJ%?tW@B!cnB6_cM:#!\a_AE/'RLkC=P2k+G#G[!t#?"<)@pAj?.@P6<Zl4VMnPRP+\*Y"$_>It`L[<AVS#l[thh,nIVN"+5W#fGt,_m5`bf[QHJ4HtM'eq%ef!KVH@?8B`6S'a5Tc49A/FL2lKQ&_g=Nh_>3;i;\hMM8%B'WWq2XBM-K>^@!;;uMWl>(mb0UHmO50EF^_n08o7i@:,2BEttrb'"g\;pVS%%2$:"'C8m2P'?I%9DFL=DUg_ggJ^1DeK%I<1pqX8oe38qg$t^mo6QVG@g@7K8*0()^<Gh5>(j5iB=3$^l+'$"Qq,7?E[@X>Eqf\#WG?X<LMXm<DdM0o,**@JX8:fn9Kr\hFXe?hC"H&XO6+F<WJlLA2:5\U'F:Q'`(J(r5ojP.#N>nZ+Eq[[)rZM(H7\ahHjKZGkOU(CPOPLf=#?Trk58t\W;G[K2)QZ#af07Bk*>>p(."sX@5!j0RN1rRX:FClsM@'iu[Un]4'D,aPR@di![`^\pjeZmecL1^jk0#p"Rg/-<SI9:;)$YR+>hjd=#ghT1moSq']$refA3pi-;B1>:K`%`D5SWK^mMe7\R0!.7<9#Gh-T*=em-83[N,e2tO&:8#]1fVT[J2FGI0'cB''tXX>4M\;9b\FU6L$bgg29U[78-:GSI=#Mb8f56~>endstream
+endobj
+xref
+0 30
+0000000000 65535 f 
+0000000061 00000 n 
+0000000123 00000 n 
+0000000230 00000 n 
+0000000342 00000 n 
+0000000447 00000 n 
+0000000615 00000 n 
+0000000779 00000 n 
+0000000944 00000 n 
+0000001108 00000 n 
+0000001325 00000 n 
+0000001491 00000 n 
+0000001674 00000 n 
+0000001926 00000 n 
+0000002010 00000 n 
+0000002176 00000 n 
+0000002345 00000 n 
+0000002573 00000 n 
+0000002799 00000 n 
+0000003018 00000 n 
+0000003187 00000 n 
+0000003360 00000 n 
+0000003532 00000 n 
+0000003715 00000 n 
+0000003883 00000 n 
+0000004161 00000 n 
+0000004231 00000 n 
+0000004587 00000 n 
+0000004655 00000 n 
+0000007496 00000 n 
+trailer
+<<
+/ID 
+[<f948c731ebb0f91e9ce5fc5a96f6f313><f948c731ebb0f91e9ce5fc5a96f6f313>]
+% ReportLab generated PDF document -- digest (opensource)
+
+/Info 26 0 R
+/Root 25 0 R
+/Size 30
+>>
+startxref
+10612
+%%EOF
